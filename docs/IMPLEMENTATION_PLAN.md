@@ -230,20 +230,20 @@ for the validation case.
 
 ### Finite size
 
-- [ ] Uniform charge distribution.
-- [ ] Gaussian charge distribution.
-- [ ] Fermi charge distribution.
-- [ ] Density normalization tests.
-- [ ] Form-factor tests.
-- [ ] Finite-size Coulomb matrix.
+- [✓] Uniform charge distribution.
+- [✓] Gaussian charge distribution.
+- [✓] Fermi charge distribution.
+- [✓] Density normalization tests.
+- [✓] Form-factor tests.
+- [✓] Finite-size Coulomb matrix.
 - [ ] Published regression cases.
 
 ### Vacuum polarization
 
-- [ ] Implement the first selected correction.
-- [ ] Validate its integration independently.
-- [ ] Add finite-nucleus support where required.
-- [ ] Report correction contributions separately.
+- [✓] Implement the first selected correction.
+- [✓] Validate its integration independently.
+- [✓] Add finite-nucleus support where required.
+- [✓] Report correction contributions separately.
 - [ ] Add published regression cases.
 
 ### Exit criterion

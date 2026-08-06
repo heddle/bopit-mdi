@@ -12,17 +12,24 @@ public record PointCoulombResult(double reducedMassMeV, double referenceEnergyMe
         double calculatedEnergyMeV, double absoluteErrorMeV, double relativeError,
         MomentumGrid grid, LandeMatrixDiagnostics landeDiagnostics,
         InverseIterationResult solverResult, RealMatrix hamiltonianMeV,
-        RealMatrix coulombOperatorMeV, PointCoulombWavefunctions wavefunctions) {
+        RealMatrix coulombOperatorMeV, RealMatrix finiteSizeCorrectionMeV,
+        RealMatrix vacuumPolarizationMeV, double finiteSizeExpectationMeV,
+        double vacuumPolarizationExpectationMeV, PointCoulombWavefunctions wavefunctions) {
     public PointCoulombResult {
         if (grid == null || landeDiagnostics == null || solverResult == null
                 || hamiltonianMeV == null || coulombOperatorMeV == null
+                || finiteSizeCorrectionMeV == null || vacuumPolarizationMeV == null
                 || wavefunctions == null) {
             throw new IllegalArgumentException("result artifacts are required");
         }
         hamiltonianMeV = hamiltonianMeV.copy();
         coulombOperatorMeV = coulombOperatorMeV.copy();
+        finiteSizeCorrectionMeV = finiteSizeCorrectionMeV.copy();
+        vacuumPolarizationMeV = vacuumPolarizationMeV.copy();
     }
 
     @Override public RealMatrix hamiltonianMeV() { return hamiltonianMeV.copy(); }
     @Override public RealMatrix coulombOperatorMeV() { return coulombOperatorMeV.copy(); }
+    @Override public RealMatrix finiteSizeCorrectionMeV() { return finiteSizeCorrectionMeV.copy(); }
+    @Override public RealMatrix vacuumPolarizationMeV() { return vacuumPolarizationMeV.copy(); }
 }

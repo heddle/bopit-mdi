@@ -31,9 +31,10 @@ public final class PointCoulombCalculator {
             throw new IllegalArgumentException("unsupported grid specification: " + problem.grid());
         }
         monitor.checkCancelled();
-        monitor.progress(0.15, "Assembling Landé-subtracted Hamiltonian");
+        monitor.progress(0.15, "Assembling electromagnetic Hamiltonian");
         HamiltonianSystem system = new SchrodingerHamiltonianBuilder().build(
-                problem.quantumState().orbitalL(), grid, problem.atomicSystem(), constants);
+                problem.quantumState().orbitalL(), grid, problem.atomicSystem(), constants,
+                problem.electromagnetic());
         monitor.checkCancelled();
         monitor.progress(0.5, "Solving selected bound state");
         CalculationMonitor outerMonitor = monitor;
@@ -59,8 +60,22 @@ public final class PointCoulombCalculator {
         var wavefunctions = PointCoulombWavefunctionFactory.create(problem.atomicSystem(),
                 problem.quantumState(), constants, grid, solverResult.eigenvector());
         monitor.progress(1.0, "Calculation complete");
+        double finiteSizeExpectation = expectation(solverResult.eigenvector(),
+                system.finiteSizeCorrectionMeV());
+        double vacuumExpectation = expectation(solverResult.eigenvector(),
+                system.vacuumPolarizationMeV());
         return new PointCoulombResult(reducedMass, reference, calculated, absolute,
                 absolute / Math.abs(reference), grid, system.landeDiagnostics(), solverResult,
-                system.matrixMeV(), system.coulombOperatorMeV(), wavefunctions);
+                system.matrixMeV(), system.coulombOperatorMeV(),
+                system.finiteSizeCorrectionMeV(), system.vacuumPolarizationMeV(),
+                finiteSizeExpectation, vacuumExpectation, wavefunctions);
+    }
+
+    private static double expectation(double[] vector, org.apache.commons.math3.linear.RealMatrix matrix) {
+        double sum = 0.0;
+        for (int i = 0; i < vector.length; i++) {
+            for (int j = 0; j < vector.length; j++) sum += vector[i] * matrix.getEntry(i, j) * vector[j];
+        }
+        return sum;
     }
 }

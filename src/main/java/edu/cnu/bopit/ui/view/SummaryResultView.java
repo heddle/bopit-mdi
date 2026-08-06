@@ -41,7 +41,7 @@ public final class SummaryResultView extends BaseView {
         var solver = result.solverResult();
         IterationRecord last = solver.history().get(solver.history().size() - 1);
         StringBuilder text = new StringBuilder(800);
-        text.append("POINT-COULOMB SCHRÖDINGER RESULT\n\n");
+        text.append("ELECTROMAGNETIC SCHRÖDINGER RESULT\n\n");
         text.append(String.format(Locale.US, "Atom/state        Z=%d, A=%d, K-, %d%s%n",
                 problem.atomicSystem().nuclearCharge(), problem.atomicSystem().massNumber(),
                 problem.quantumState().principalN(), orbitalLetter(problem.quantumState().orbitalL())));
@@ -51,8 +51,16 @@ public final class SummaryResultView extends BaseView {
         text.append(String.format(Locale.US, "Reduced mass      %.9f MeV%n", result.reducedMassMeV()));
         text.append(String.format(Locale.US, "Calculated energy %.12f MeV%n", result.calculatedEnergyMeV()));
         text.append(String.format(Locale.US, "Exact Coulomb     %.12f MeV%n", result.referenceEnergyMeV()));
-        text.append(String.format(Locale.US, "Absolute error    %.6e MeV%n", result.absoluteErrorMeV()));
-        text.append(String.format(Locale.US, "Relative error    %.6e (%.6e %%)%n",
+        text.append("Charge model      ").append(problem.electromagnetic().nuclearCharge()
+                .getClass().getSimpleName()).append('\n');
+        text.append("Uehling VP        ").append(problem.electromagnetic()
+                .uehlingVacuumPolarization()).append('\n');
+        text.append(String.format(Locale.US, "<finite size>     % .9e MeV%n",
+                result.finiteSizeExpectationMeV()));
+        text.append(String.format(Locale.US, "<Uehling>         % .9e MeV%n",
+                result.vacuumPolarizationExpectationMeV()));
+        text.append(String.format(Locale.US, "Point-reference Δ %.6e MeV%n", result.absoluteErrorMeV()));
+        text.append(String.format(Locale.US, "Relative |Δ|      %.6e (%.6e %%)%n",
                 result.relativeError(), 100.0 * result.relativeError()));
         text.append(String.format(Locale.US, "Iterations        %d%n", solver.history().size()));
         text.append(String.format(Locale.US, "Residual norm     %.6e%n", last.residualNorm()));

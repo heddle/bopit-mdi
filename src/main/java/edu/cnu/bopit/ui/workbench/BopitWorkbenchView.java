@@ -25,6 +25,7 @@ import edu.cnu.bopit.model.BopitProblem;
 import edu.cnu.bopit.physics.constants.PublishedConstantSets;
 import edu.cnu.bopit.ui.editor.AtomStateEditorPanel;
 import edu.cnu.bopit.ui.editor.GridEditorPanel;
+import edu.cnu.bopit.ui.editor.ElectromagneticEditorPanel;
 import edu.cnu.bopit.ui.editor.SolverEditorPanel;
 import edu.cnu.bopit.ui.view.ConvergenceView;
 import edu.cnu.bopit.ui.view.CoulombMatrixHeatmapView;
@@ -45,9 +46,12 @@ import edu.cnu.mdi.view.BaseView;
 public final class BopitWorkbenchView extends BaseView implements SimulationListener {
     private static final Color ERROR_COLOR = new Color(150, 20, 20);
     private static final Color OK_COLOR = new Color(20, 105, 45);
-    private static final String[] SECTIONS = { "Atom and state", "Momentum grid", "Solver" };
+    private static final String[] SECTIONS = {
+            "Atom and state", "Electromagnetism", "Momentum grid", "Solver" };
 
     private final AtomStateEditorPanel atomEditor = new AtomStateEditorPanel(this::refreshValidation);
+    private final ElectromagneticEditorPanel electromagneticEditor =
+            new ElectromagneticEditorPanel(this::refreshValidation);
     private final GridEditorPanel gridEditor = new GridEditorPanel(this::refreshValidation);
     private final SolverEditorPanel solverEditor = new SolverEditorPanel(this::refreshValidation);
     private final JTextArea validationText = new JTextArea(4, 60);
@@ -94,8 +98,9 @@ public final class BopitWorkbenchView extends BaseView implements SimulationList
 
         JPanel cards = new JPanel(new CardLayout());
         cards.add(atomEditor, SECTIONS[0]);
-        cards.add(gridEditor, SECTIONS[1]);
-        cards.add(solverEditor, SECTIONS[2]);
+        cards.add(electromagneticEditor, SECTIONS[1]);
+        cards.add(gridEditor, SECTIONS[2]);
+        cards.add(solverEditor, SECTIONS[3]);
         sectionList.addListSelectionListener(event -> {
             if (!event.getValueIsAdjusting() && sectionList.getSelectedValue() != null) {
                 ((CardLayout) cards.getLayout()).show(cards, sectionList.getSelectedValue());
@@ -132,6 +137,7 @@ public final class BopitWorkbenchView extends BaseView implements SimulationList
         atomEditor.load(preset);
         gridEditor.load(preset);
         solverEditor.load(preset);
+        electromagneticEditor.loadPointCharge();
         status.setText("Loaded published kaonic sulfur-32 3d legacy-grid preset");
         refreshValidation();
     }
@@ -153,6 +159,12 @@ public final class BopitWorkbenchView extends BaseView implements SimulationList
     private void refreshValidation() {
         if (validationText == null) return;
         ValidationReport report = input().validate();
+        List<String> electromagneticErrors = electromagneticEditor.validationErrors();
+        if (!electromagneticErrors.isEmpty()) {
+            java.util.ArrayList<String> errors = new java.util.ArrayList<>(report.errors());
+            errors.addAll(electromagneticErrors);
+            report = new ValidationReport(errors, report.warnings());
+        }
         List<String> messages = report.isValid()
                 ? (report.warnings().isEmpty() ? List.of("Input is valid.") : report.warnings())
                 : report.errors();
@@ -165,7 +177,10 @@ public final class BopitWorkbenchView extends BaseView implements SimulationList
         WorkbenchProblemInput editorInput = input();
         ValidationReport report = editorInput.validate();
         if (!report.isValid() || isCalculationActive()) return;
-        submittedProblem = editorInput.toProblem();
+        BopitProblem baseProblem = editorInput.toProblem();
+        submittedProblem = new BopitProblem(baseProblem.atomicSystem(), baseProblem.quantumState(),
+                baseProblem.waveEquation(), baseProblem.grid(), baseProblem.solver(),
+                electromagneticEditor.values());
         currentSimulation = new BopitCalculationSimulation(submittedProblem,
                 PublishedConstantSets.BOPIT_1990);
         SimulationEngine engine = new SimulationEngine(currentSimulation,
