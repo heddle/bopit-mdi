@@ -59,6 +59,12 @@ public final class SummaryResultView extends BaseView {
         text.append("Converged         ").append(solver.converged()).append('\n');
         text.append("Termination       ").append(solver.terminationReason()).append('\n');
         text.append(String.format(Locale.US, "Elapsed           %.3f s%n", elapsedSeconds));
+        var wavefunction = result.wavefunctions().diagnostics();
+        text.append(String.format(Locale.US, "Momentum norm     %.9f%n", wavefunction.momentumNorm()));
+        text.append(String.format(Locale.US, "Coordinate norm   %.9f%n", wavefunction.coordinateNorm()));
+        text.append(String.format(Locale.US, "Analytic overlap  %.9f (momentum), %.9f (coordinate)%n",
+                wavefunction.absoluteAnalyticMomentumOverlap(),
+                wavefunction.absoluteAnalyticCoordinateOverlap()));
         if (result.grid().diagnostics() instanceof AdaptiveGridDiagnostics adaptive
                 && !adaptive.warnings().isEmpty()) {
             text.append("\nGRID WARNINGS\n");

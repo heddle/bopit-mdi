@@ -5,16 +5,18 @@ import org.apache.commons.math3.linear.RealMatrix;
 import edu.cnu.bopit.grid.MomentumGrid;
 import edu.cnu.bopit.matrix.LandeMatrixDiagnostics;
 import edu.cnu.bopit.solver.InverseIterationResult;
+import edu.cnu.bopit.physics.wavefunction.PointCoulombWavefunctions;
 
 /** Completed Stage 1 point-Coulomb calculation. */
 public record PointCoulombResult(double reducedMassMeV, double referenceEnergyMeV,
         double calculatedEnergyMeV, double absoluteErrorMeV, double relativeError,
         MomentumGrid grid, LandeMatrixDiagnostics landeDiagnostics,
         InverseIterationResult solverResult, RealMatrix hamiltonianMeV,
-        RealMatrix coulombOperatorMeV) {
+        RealMatrix coulombOperatorMeV, PointCoulombWavefunctions wavefunctions) {
     public PointCoulombResult {
         if (grid == null || landeDiagnostics == null || solverResult == null
-                || hamiltonianMeV == null || coulombOperatorMeV == null) {
+                || hamiltonianMeV == null || coulombOperatorMeV == null
+                || wavefunctions == null) {
             throw new IllegalArgumentException("result artifacts are required");
         }
         hamiltonianMeV = hamiltonianMeV.copy();

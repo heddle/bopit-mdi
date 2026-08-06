@@ -12,6 +12,7 @@ import edu.cnu.mdi.splot.pdata.Histo2DData;
 import edu.cnu.mdi.splot.pdata.PlotData;
 import edu.cnu.mdi.splot.pdata.PlotDataException;
 import edu.cnu.mdi.splot.plot.PlotCanvas;
+import edu.cnu.mdi.splot.plot.MultiplotPanel;
 import edu.cnu.mdi.splot.plot.PlotPanel;
 import edu.cnu.mdi.util.PropertyUtils;
 import edu.cnu.mdi.view.BaseView;
@@ -47,6 +48,8 @@ public final class CoulombMatrixHeatmapView extends BaseView {
         JPanel controls = new JPanel();
         controls.add(logMagnitude);
         getContentPane().add(controls, BorderLayout.NORTH);
-        getContentPane().add(new PlotPanel(canvas), BorderLayout.CENTER);
+        MultiplotPanel plots = new MultiplotPanel(true);
+        plots.addPlot("Coulomb matrix", new PlotPanel(canvas));
+        getContentPane().add(plots, BorderLayout.CENTER);
     }
 }

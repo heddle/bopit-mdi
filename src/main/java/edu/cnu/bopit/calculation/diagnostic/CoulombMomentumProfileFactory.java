@@ -40,7 +40,7 @@ public final class CoulombMomentumProfileFactory {
         for (int i = 0; i < sampleCount; i++) {
             double p = Math.exp(logMin + i * logStep);
             momenta[i] = p;
-            magnitude[i] = Math.abs(unnormalized(state, k, p));
+            magnitude[i] = Math.abs(shapeValue(state, k, p));
             maximum = Math.max(maximum, magnitude[i]);
         }
         if (!(maximum > 0.0) || !Double.isFinite(maximum)) {
@@ -50,7 +50,8 @@ public final class CoulombMomentumProfileFactory {
         return new CoulombMomentumProfile(momenta, magnitude);
     }
 
-    static double unnormalized(QuantumState state, double k, double momentum) {
+    /** Unnormalized analytic radial momentum-space Coulomb shape. */
+    public static double shapeValue(QuantumState state, double k, double momentum) {
         int n = state.principalN();
         int l = state.orbitalL();
         double p2 = momentum * momentum;

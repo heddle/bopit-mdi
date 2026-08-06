@@ -31,6 +31,7 @@ import edu.cnu.bopit.ui.view.CoulombMatrixHeatmapView;
 import edu.cnu.bopit.ui.view.LandeDiagnosticView;
 import edu.cnu.bopit.ui.view.MomentumGridView;
 import edu.cnu.bopit.ui.view.SummaryResultView;
+import edu.cnu.bopit.ui.view.WavefunctionView;
 import edu.cnu.mdi.sim.ProgressInfo;
 import edu.cnu.mdi.sim.SimulationContext;
 import edu.cnu.mdi.sim.SimulationEngine;
@@ -221,6 +222,7 @@ public final class BopitWorkbenchView extends BaseView implements SimulationList
             new ConvergenceView(result);
             new LandeDiagnosticView(submittedProblem, result, PublishedConstantSets.BOPIT_1990);
             new CoulombMatrixHeatmapView(result);
+            new WavefunctionView(result);
         }
         setRunningUi(false);
     }

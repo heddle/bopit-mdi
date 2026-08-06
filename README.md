@@ -61,6 +61,11 @@ Landé-subtraction, and Coulomb-matrix diagnostic views. MDI plot feedback shows
 coordinates under the pointer, and the Gallery menu switches among related
 diagnostic plots.
 
+Stage 5 retains normalized momentum- and coordinate-space radial
+wavefunctions, compares both with the exact point-Coulomb state, and reports
+normalization, overlap, and relative L2 diagnostics in a dedicated MDI plot
+gallery.
+
 ## Design documents
 
 - [`AGENTS.md`](AGENTS.md)

@@ -213,13 +213,13 @@ regularization.
 
 ### Tasks
 
-- [ ] Define immutable momentum-wavefunction result.
-- [ ] Normalize using the documented convention.
-- [ ] Add momentum-space plot.
-- [ ] Implement Fourier–Bessel transform.
-- [ ] Validate against an analytic Coulomb state.
-- [ ] Add coordinate-space plot.
-- [ ] Show normalization diagnostics.
+- [✓] Define immutable momentum-wavefunction result.
+- [✓] Normalize using the documented convention.
+- [✓] Add momentum-space plot.
+- [✓] Implement Fourier–Bessel transform.
+- [✓] Validate against an analytic Coulomb state.
+- [✓] Add coordinate-space plot.
+- [✓] Show normalization diagnostics.
 
 ### Exit criterion
 

@@ -12,6 +12,7 @@ import edu.cnu.bopit.physics.ReducedMass;
 import edu.cnu.bopit.physics.constants.PhysicalConstantSet;
 import edu.cnu.bopit.solver.InverseIterationResult;
 import edu.cnu.bopit.solver.InverseIterationSolver;
+import edu.cnu.bopit.physics.wavefunction.PointCoulombWavefunctionFactory;
 
 /** Orchestrates a complete headless point-Coulomb calculation. */
 public final class PointCoulombCalculator {
@@ -41,7 +42,7 @@ public final class PointCoulombCalculator {
                 return outerMonitor.isCancellationRequested();
             }
             @Override public void progress(double fraction, String message) {
-                outerMonitor.progress(0.5 + 0.5 * fraction, message);
+                outerMonitor.progress(0.5 + 0.4 * fraction, message);
             }
         };
         InverseIterationResult solverResult = new InverseIterationSolver().solve(
@@ -53,9 +54,13 @@ public final class PointCoulombCalculator {
                 problem.quantumState().principalN());
         double calculated = solverResult.eigenvalueMeV();
         double absolute = Math.abs(calculated - reference);
+        monitor.checkCancelled();
+        monitor.progress(0.92, "Normalizing and transforming wavefunction");
+        var wavefunctions = PointCoulombWavefunctionFactory.create(problem.atomicSystem(),
+                problem.quantumState(), constants, grid, solverResult.eigenvector());
         monitor.progress(1.0, "Calculation complete");
         return new PointCoulombResult(reducedMass, reference, calculated, absolute,
                 absolute / Math.abs(reference), grid, system.landeDiagnostics(), solverResult,
-                system.matrixMeV(), system.coulombOperatorMeV());
+                system.matrixMeV(), system.coulombOperatorMeV(), wavefunctions);
     }
 }

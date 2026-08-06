@@ -19,6 +19,7 @@ import edu.cnu.mdi.graphics.style.SymbolType;
 import edu.cnu.mdi.splot.fit.CurveDrawingMethod;
 import edu.cnu.mdi.splot.pdata.PlotData;
 import edu.cnu.mdi.splot.plot.PlotCanvas;
+import edu.cnu.mdi.splot.plot.MultiplotPanel;
 import edu.cnu.mdi.splot.plot.PlotPanel;
 import edu.cnu.mdi.splot.plot.PlotParameters.AxisScale;
 import edu.cnu.mdi.splot.plot.VerticalLine;
@@ -49,7 +50,9 @@ public final class MomentumGridView extends BaseView {
         canvas.getParameters().setXScale(AxisScale.LOG10).includeYZero(true)
                 .setLegendDrawing(true).setMinExponentX(4).setNumDecimalX(3);
         addBoundaries(canvas, result);
-        getContentPane().add(new PlotPanel(canvas), BorderLayout.CENTER);
+        MultiplotPanel plots = new MultiplotPanel(true);
+        plots.addPlot("Momentum grid", new PlotPanel(canvas));
+        getContentPane().add(plots, BorderLayout.CENTER);
     }
 
     private static void addRegionPoints(PlotData data, PointCoulombResult result,

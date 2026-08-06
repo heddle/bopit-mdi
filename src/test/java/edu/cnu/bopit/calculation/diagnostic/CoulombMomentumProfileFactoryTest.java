@@ -27,7 +27,7 @@ class CoulombMomentumProfileFactoryTest {
     @Test
     void twoSShapeHasNodeAtCoulombMomentumScale() {
         assertEquals(0.0,
-                CoulombMomentumProfileFactory.unnormalized(new QuantumState(2, 0), 0.2, 0.2),
+                CoulombMomentumProfileFactory.shapeValue(new QuantumState(2, 0), 0.2, 0.2),
                 1e-14);
     }
 }
