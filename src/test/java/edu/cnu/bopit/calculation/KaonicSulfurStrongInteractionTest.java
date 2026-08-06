@@ -20,7 +20,7 @@ class KaonicSulfurStrongInteractionTest {
         var density = new FermiChargeSpec(3.20, 0.59, 0.0);
         var problem = new BopitProblem(base.atomicSystem(), base.quantumState(),
                 base.waveEquation(), base.grid(), base.solver(), base.electromagnetic(),
-                new KwonTabakinOpticalPotentialSpec(new Complex(-0.44, 0.81), density));
+                new KwonTabakinOpticalPotentialSpec(new Complex(0.44, 0.83), density));
         var solver = new ComplexInverseIterationSpec(new Complex(-0.367, -0.001),
                 1e-11, 1e-9, 5, 80);
         var result = new StrongInteractionCalculator().calculate(

@@ -45,7 +45,7 @@ class BopitJsonPersistenceTest {
         original = new BopitProblem(original.atomicSystem(), original.quantumState(),
                 new KleinGordonSpec(KleinGordonForm.SCALAR_NUCLEAR, 2e-9, 19),
                 original.grid(), original.solver(), new ElectromagneticSpec(fermi, true),
-                new KwonTabakinOpticalPotentialSpec(new Complex(-0.44, 0.81), fermi));
+                new KwonTabakinOpticalPotentialSpec(new Complex(0.44, 0.83), fermi));
         Path file = directory.resolve("problem.json");
         BopitJsonPersistence.writeProblem(original, file);
         assertEquals(original, BopitJsonPersistence.readProblem(file));

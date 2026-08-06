@@ -72,6 +72,14 @@ human-readable point-Coulomb calculation report. Persistence conventions and
 schema compatibility behavior are documented in
 [`docs/STAGE_10_CONVENTIONS.md`](docs/STAGE_10_CONVENTIONS.md).
 
+The atom editor supports electron, K-, mu-, and pi- orbiting particles. Their
+masses are selected automatically from the 2024 Particle Data Group values;
+the historical BOPIT constant set remains available for regression tests.
+
+The **Table III preset** reproduces the published Kwon-Tabakin sulfur-32 3d
+strong-interaction calculation with the Koch-Sternheim fitted scattering
+length, finite Fermi charge, and energy-weighted Klein-Gordon equation.
+
 ## Design documents
 
 - [`AGENTS.md`](AGENTS.md)

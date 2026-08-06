@@ -23,8 +23,8 @@ import edu.cnu.bopit.model.StrongInteractionSpec;
 public final class StrongInteractionEditorPanel extends JPanel {
     private enum Kind { NONE, KWON_TABAKIN_LOCAL }
     private final JComboBox<Kind> kind = new JComboBox<>(Kind.values());
-    private final JTextField scatteringReal = new JTextField("-0.44", 10);
-    private final JTextField scatteringImaginary = new JTextField("0.81", 10);
+    private final JTextField scatteringReal = new JTextField("0.44", 10);
+    private final JTextField scatteringImaginary = new JTextField("0.83", 10);
     private final JTextField fermiC = new JTextField("3.20", 10);
     private final JTextField fermiA = new JTextField("0.59", 10);
     private final JTextField fermiW = new JTextField("0.0", 10);
@@ -33,8 +33,8 @@ public final class StrongInteractionEditorPanel extends JPanel {
         super(new GridBagLayout());
         setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12));
         addRow(0, "Strong interaction", kind, "");
-        addRow(1, "Re fitted scattering length", scatteringReal, "fm");
-        addRow(2, "Im fitted scattering length", scatteringImaginary, "fm");
+        addRow(1, "Re fitted scattering length (per nucleon)", scatteringReal, "fm");
+        addRow(2, "Im fitted scattering length (per nucleon)", scatteringImaginary, "fm");
         addRow(3, "Fermi half-density radius c", fermiC, "fm");
         addRow(4, "Fermi diffuseness a", fermiA, "fm");
         addRow(5, "Fermi w", fermiW, "dimensionless");

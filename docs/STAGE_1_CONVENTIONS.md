@@ -89,3 +89,27 @@ separately and is not hidden in that tolerance.
 The 40-point relative error, `7.33663e-5` (`0.00733663%`), agrees with the
 `-7.33e-3%` magnitude printed by the 1985 run even though its absolute energy
 differs because that publication used a different reduced mass.
+
+## 2024 PDG constants and orbiting particles
+
+The interactive workbench uses the separate `PDG_2024` constant set. The
+historical `BOPIT_1990` set remains unchanged for published regression tests.
+The 2024 Particle Data Group booklet gives:
+
+| Quantity | Value used |
+|---|---:|
+| `hbar c` | 197.3269804 MeV fm |
+| fine-structure constant | 7.2973525693e-3 |
+| electron mass | 0.51099895000 MeV |
+| muon mass | 105.6583755 MeV |
+| charged-pion mass | 139.57039 MeV |
+| charged-kaon mass | 493.677 MeV |
+| proton mass | 938.27208816 MeV |
+| neutron mass | 939.56542052 MeV |
+
+The constants, electron mass, proton mass, and neutron mass are from Table 1.1
+on printed page 6. The electron and muon masses are also listed on printed page
+17, the charged-pion mass on printed page 28, and the charged-kaon mass on
+printed page 41. Stored calculations retain their explicit particle mass for
+reproducibility. The editor derives a new problem's mass from its selected
+particle and does not allow an independent mass edit.

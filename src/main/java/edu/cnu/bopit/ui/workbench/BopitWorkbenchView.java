@@ -28,6 +28,7 @@ import edu.cnu.bopit.model.BopitProblem;
 import edu.cnu.bopit.persistence.BopitJsonPersistence;
 import edu.cnu.bopit.persistence.CalculationReport;
 import edu.cnu.bopit.physics.constants.PublishedConstantSets;
+import edu.cnu.bopit.physics.constants.PhysicalConstantSet;
 import edu.cnu.bopit.ui.editor.AtomStateEditorPanel;
 import edu.cnu.bopit.ui.editor.GridEditorPanel;
 import edu.cnu.bopit.ui.editor.ElectromagneticEditorPanel;
@@ -47,6 +48,8 @@ import edu.cnu.bopit.ui.view.ComplexKleinGordonSummaryView;
 import edu.cnu.bopit.ui.view.DiracSummaryView;
 import edu.cnu.bopit.ui.study.ParameterStudyWorkbenchView;
 import edu.cnu.bopit.model.DiracSpec;
+import edu.cnu.bopit.model.KwonTabakinOpticalPotentialSpec;
+import edu.cnu.bopit.model.OrbitingParticle;
 import edu.cnu.mdi.sim.ProgressInfo;
 import edu.cnu.mdi.sim.SimulationContext;
 import edu.cnu.mdi.sim.SimulationEngine;
@@ -83,6 +86,7 @@ public final class BopitWorkbenchView extends BaseView implements SimulationList
     private BopitCalculationSimulation currentSimulation;
     private BopitProblem submittedProblem;
     private PointCoulombResult completedPointResult;
+    private PhysicalConstantSet calculationConstants = PublishedConstantSets.PDG_2024;
 
     public BopitWorkbenchView() {
         super(PropertyUtils.TITLE, "Point-Coulomb Workbench",
@@ -99,11 +103,13 @@ public final class BopitWorkbenchView extends BaseView implements SimulationList
     private JPanel createToolbar() {
         JPanel toolbar = new JPanel(new FlowLayout(FlowLayout.LEFT));
         JButton presetButton = new JButton("Sulfur-32 3d preset");
+        JButton tableIIIButton = new JButton("Table III preset");
         JButton openButton = new JButton("Open problem…");
         JButton saveButton = new JButton("Save problem…");
         JButton reportButton = new JButton("Save report…");
         JButton studyButton = new JButton("Parameter study…");
         presetButton.addActionListener(event -> loadSulfurPreset());
+        tableIIIButton.addActionListener(event -> loadTableIIIPreset());
         openButton.addActionListener(event -> openProblem());
         saveButton.addActionListener(event -> saveProblem());
         reportButton.addActionListener(event -> saveReport());
@@ -111,6 +117,7 @@ public final class BopitWorkbenchView extends BaseView implements SimulationList
         runButton.addActionListener(event -> runCalculation());
         cancelButton.addActionListener(event -> cancelCalculation());
         toolbar.add(presetButton);
+        toolbar.add(tableIIIButton);
         toolbar.add(openButton);
         toolbar.add(saveButton);
         toolbar.add(reportButton);
@@ -166,17 +173,26 @@ public final class BopitWorkbenchView extends BaseView implements SimulationList
     }
 
     private void loadSulfurPreset() {
+        calculationConstants = PublishedConstantSets.PDG_2024;
         BopitProblem preset = PublishedProblems.kaonicSulfur32Legacy3d(
                 PublishedConstantSets.BOPIT_1990, 40, 10);
         atomEditor.load(preset);
+        atomEditor.useRecommendedParticleMass();
         equationEditor.load(preset.waveEquation());
         gridEditor.load(preset);
         solverEditor.load(preset);
         electromagneticEditor.loadPointCharge();
         strongEditor.loadNone();
         completedPointResult = null;
-        status.setText("Loaded published kaonic sulfur-32 3d legacy-grid preset");
+        status.setText("Loaded sulfur-32 3d legacy-grid preset with PDG-2024 particle mass");
         refreshValidation();
+    }
+
+    private void loadTableIIIPreset() {
+        calculationConstants = PublishedConstantSets.BOPIT_1990;
+        loadProblem(PublishedProblems.kaonicSulfur32TableIII(
+                calculationConstants, 80, 20));
+        status.setText("Loaded Kwon-Tabakin Table III sulfur-32 3d regression preset");
     }
 
     private void loadProblem(BopitProblem problem) {
@@ -195,6 +211,7 @@ public final class BopitWorkbenchView extends BaseView implements SimulationList
         if (chooser.showOpenDialog(getContentPane()) != JFileChooser.APPROVE_OPTION) return;
         try {
             BopitProblem problem = BopitJsonPersistence.readProblem(chooser.getSelectedFile().toPath());
+            calculationConstants = PublishedConstantSets.PDG_2024;
             loadProblem(problem);
             status.setText("Opened " + chooser.getSelectedFile().getName());
         } catch (Exception error) { showFileError("Could not open problem", error); }
@@ -252,7 +269,8 @@ public final class BopitWorkbenchView extends BaseView implements SimulationList
         var grid = gridEditor.values();
         var solver = solverEditor.values();
         return new WorkbenchProblemInput(atom.nuclearCharge(), atom.massNumber(),
-                atom.particleMassMeV(), atom.nuclearMassMeV(), atom.principalN(), atom.orbitalL(),
+                atom.particle(), atom.particleMassMeV(), atom.nuclearMassMeV(),
+                atom.principalN(), atom.orbitalL(),
                 grid.gridKind(), grid.totalPoints(), grid.nuclearPoints(),
                 grid.legacyAtomicScaleFmInverse(), grid.legacyNuclearScaleFmInverse(),
                 grid.legacyBoundaryFmInverse(), grid.legacyMaximumMomentumScale(),
@@ -274,6 +292,18 @@ public final class BopitWorkbenchView extends BaseView implements SimulationList
         if (!strongErrors.isEmpty()) {
             java.util.ArrayList<String> errors = new java.util.ArrayList<>(report.errors());
             errors.addAll(strongErrors);
+            report = new ValidationReport(errors, report.warnings());
+        }
+        if (strongErrors.isEmpty() && strongEditor.values() instanceof KwonTabakinOpticalPotentialSpec
+                && atomEditor.values().particle() != OrbitingParticle.KAON_MINUS) {
+            java.util.ArrayList<String> errors = new java.util.ArrayList<>(report.errors());
+            errors.add("The Kwon-Tabakin strong interaction is a kaon-nucleus model and requires K-.");
+            report = new ValidationReport(errors, report.warnings());
+        }
+        if (equationEditor.value() instanceof DiracSpec
+                && atomEditor.values().particle().twiceSpin() != 1) {
+            java.util.ArrayList<String> errors = new java.util.ArrayList<>(report.errors());
+            errors.add("The Dirac equation requires a spin-1/2 orbiting particle (electron or muon).");
             report = new ValidationReport(errors, report.warnings());
         }
         if (strongErrors.isEmpty() && equationEditor.value() instanceof DiracSpec dirac) {
@@ -303,7 +333,7 @@ public final class BopitWorkbenchView extends BaseView implements SimulationList
         if (!report.isValid() || isCalculationActive()) return;
         submittedProblem = configuredProblem(editorInput);
         currentSimulation = new BopitCalculationSimulation(submittedProblem,
-                PublishedConstantSets.BOPIT_1990);
+                calculationConstants);
         SimulationEngine engine = new SimulationEngine(currentSimulation,
                 new SimulationEngineConfig(0, 0, 0, true));
         currentSimulation.bindEngine(engine);
@@ -322,7 +352,7 @@ public final class BopitWorkbenchView extends BaseView implements SimulationList
             status.setText("Correct invalid inputs before opening a parameter study");
             return;
         }
-        new ParameterStudyWorkbenchView(configuredProblem(input()), PublishedConstantSets.BOPIT_1990);
+        new ParameterStudyWorkbenchView(configuredProblem(input()), calculationConstants);
     }
 
     private BopitProblem configuredProblem(WorkbenchProblemInput editorInput) {
@@ -372,9 +402,9 @@ public final class BopitWorkbenchView extends BaseView implements SimulationList
             completedPointResult = result;
             status.setText("Calculation complete; retained result and diagnostic views opened");
             new SummaryResultView(submittedProblem, result, context.getElapsedSeconds());
-            new MomentumGridView(submittedProblem, result, PublishedConstantSets.BOPIT_1990);
+            new MomentumGridView(submittedProblem, result, calculationConstants);
             new ConvergenceView(result);
-            new LandeDiagnosticView(submittedProblem, result, PublishedConstantSets.BOPIT_1990);
+            new LandeDiagnosticView(submittedProblem, result, calculationConstants);
             new CoulombMatrixHeatmapView(result);
             new WavefunctionView(result);
         } else if (currentSimulation.strongResult().isPresent()) {

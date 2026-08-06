@@ -263,7 +263,7 @@ published targets within documented tolerances.
 - [✓] Calculate shift and width.
 - [✓] Verify sign and factor conventions.
 - [✓] Add momentum- and coordinate-space complex wavefunctions.
-- [ ] Add published regression.
+- [✓] Add published regression.
 
 ### Exit criterion
 

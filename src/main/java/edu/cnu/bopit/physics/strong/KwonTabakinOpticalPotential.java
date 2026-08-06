@@ -25,8 +25,11 @@ public final class KwonTabakinOpticalPotential implements StrongInteractionModel
         double kineticScale = constants.hbarCMeVFm() * constants.hbarCMeVFm()
                 / (2.0 * reducedMass);
         double recoilFactor = 1.0 + atom.particleMassMeV() / constants.protonMassMeV();
-        // The 2*pi angular projection converts Eq. (24)'s -1/(2*pi^2) to -1/pi.
-        coefficientMeVFm3 = fittedScatteringLengthFm.multiply(-kineticScale * recoilFactor / Math.PI);
+        // Koch-Sternheim normalize rho(r) to A. Our form factor has F(0)=1, so A
+        // remains explicit. The 2*pi partial-wave projection converts Eq. (24)'s
+        // -1/(2*pi^2) to -1/pi.
+        coefficientMeVFm3 = fittedScatteringLengthFm.multiply(
+                -atom.massNumber() * kineticScale * recoilFactor / Math.PI);
         this.formFactor = formFactor;
     }
 

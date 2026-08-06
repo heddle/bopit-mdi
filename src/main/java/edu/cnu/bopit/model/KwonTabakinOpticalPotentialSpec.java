@@ -2,7 +2,10 @@ package edu.cnu.bopit.model;
 
 import org.apache.commons.math3.complex.Complex;
 
-/** Parameters for the local optical potential of Kwon and Tabakin (1978), Eq. (24). */
+/**
+ * Parameters for Kwon and Tabakin (1978), Eq. (24). The fitted scattering
+ * length is per nucleon; matrix assembly supplies the density normalization A.
+ */
 public record KwonTabakinOpticalPotentialSpec(Complex fittedScatteringLengthFm,
         ChargeDistributionSpec nuclearFormFactor) implements StrongInteractionSpec {
     public KwonTabakinOpticalPotentialSpec {

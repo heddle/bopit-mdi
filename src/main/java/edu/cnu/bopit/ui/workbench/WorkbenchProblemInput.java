@@ -20,6 +20,7 @@ import edu.cnu.bopit.model.SchrodingerSpec;
 public record WorkbenchProblemInput(
         int nuclearCharge,
         int massNumber,
+        OrbitingParticle particle,
         double particleMassMeV,
         double nuclearMassMeV,
         int principalN,
@@ -45,6 +46,7 @@ public record WorkbenchProblemInput(
         List<String> warnings = new ArrayList<>();
         if (nuclearCharge <= 0) errors.add("Nuclear charge Z must be positive.");
         if (massNumber < nuclearCharge) errors.add("Mass number A must be at least Z.");
+        if (particle == null) errors.add("An orbiting particle is required.");
         requirePositive(particleMassMeV, "Particle mass", errors);
         requirePositive(nuclearMassMeV, "Nuclear mass", errors);
         if (principalN < 1) errors.add("Principal quantum number n must be at least 1.");
@@ -88,7 +90,7 @@ public record WorkbenchProblemInput(
             throw new IllegalArgumentException(String.join(" ", report.errors()));
         }
         AtomicSystem atom = new AtomicSystem(nuclearCharge, massNumber,
-                OrbitingParticle.KAON_MINUS, particleMassMeV, nuclearMassMeV);
+                particle, particleMassMeV, nuclearMassMeV);
         GridSpec grid = gridKind == GridKind.LEGACY
                 ? new LegacyGridSpec(totalPoints, nuclearPoints,
                         legacyAtomicScaleFmInverse, legacyNuclearScaleFmInverse,

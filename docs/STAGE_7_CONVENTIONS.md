@@ -9,10 +9,12 @@ The first model is the simple local kaon-nucleus optical potential in Eq. (24)
 of Kwon and Tabakin, Phys. Rev. C 18 (1978):
 
 `V_N(q) = -[1/(2 pi^2)] [(hbar c)^2/(2 mu)]
-          [1 + m_K/m_N] a_bar F(q)`.
+          [1 + m_K/m_N] A a_bar F(q)`.
 
-Here `a_bar` is the fitted complex scattering length in fm, `F(0)=1` is the
-normalized nuclear form factor, masses are in MeV, momentum is in fm^-1, and
+Here `a_bar` is the fitted per-nucleon complex scattering length in fm. Koch
+and Sternheim normalize the coordinate-space density to nucleon number `A`.
+Because the Java charge form factor has `F(0)=1`, the coefficient explicitly
+contains `A*a_bar`. Masses are in MeV, momentum is in fm^-1, and
 the momentum-space potential has units MeV fm^3. Partial-wave projection
 multiplies the expression by `2 pi integral_-1^1 P_l(x) dx`.
 
@@ -69,17 +71,18 @@ complex square root of its c-norm. The unitary Fourier-Bessel factor remains
 `sqrt(2/pi)`. Real, imaginary, and magnitude components are retained and
 plotted separately.
 
-## Published-regression limitation
+## Published sulfur-32 regression
 
-The 1978 paper publishes kaonic carbon-12 and sulfur-32 shifts and widths in
-Table III, but those calculations use a Klein-Gordon equation and fitted
-scattering lengths imported from Ref. 21. The table gives the density
-parameters but does not print the sulfur fitted complex scattering length.
-The paper's carbon figure prints its own fitted value, which must not be
-silently reused as a sulfur parameter.
+Koch and Sternheim, Phys. Rev. Lett. 28 (1972), Eq. (5), give the global fitted
+value `a_bar=(0.44+0.83 i) fm`, with quoted uncertainties `0.04 fm` and
+`0.07 fm`. Their density is normalized to `A`, and their sulfur-32 3d entry
+uses Fermi parameters `c=3.20 fm` and `a=0.59 fm`. Kwon and Tabakin Table III
+reports the momentum-space shift `0.503 keV` and width `2.317 keV`.
 
-Consequently Stage 7 tests the formula, signs, block conversion, complex
-eigenpair selection, normalization, and a complete sulfur calculation with
-explicit illustrative parameters. The published sulfur regression remains
-open until both the missing fitted parameter is supplied and the Stage 8
-Klein-Gordon equation is available.
+The named Java preset uses the energy-weighted Klein-Gordon form, finite Fermi
+electromagnetic charge, the same Fermi strong form factor, historical BOPIT
+constants, and the fitted scattering length. At 80 legacy points it gives a
+shift of `0.501121 keV` and width `2.344556 keV`. Regression tolerances are
+`0.005 keV` for shift and `0.030 keV` for width. These cover printed precision,
+source-era constants, and remaining published implementation details without
+retuning the fitted physical parameter.

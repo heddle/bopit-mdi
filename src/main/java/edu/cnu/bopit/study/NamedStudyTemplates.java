@@ -36,7 +36,7 @@ public final class NamedStudyTemplates {
     public static ParameterStudy strongPotentialSensitivity(BopitProblem base) {
         return new ParameterStudy("Strong-potential sensitivity", base,
                 List.of(new LinearParameterAxis("Re scattering length",
-                        ParameterTarget.STRONG_REAL_SCATTERING_LENGTH_FM, -0.7, -0.2, 6)), STANDARD);
+                        ParameterTarget.STRONG_REAL_SCATTERING_LENGTH_FM, 0.2, 0.7, 6)), STANDARD);
     }
     public static ParameterStudy finiteSizeSensitivity(BopitProblem base) {
         return new ParameterStudy("Finite-size sensitivity", base,

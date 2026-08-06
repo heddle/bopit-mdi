@@ -24,7 +24,7 @@ class ComplexKleinGordonCalculatorTest {
         var problem = new BopitProblem(base.atomicSystem(), base.quantumState(),
                 new KleinGordonSpec(form, 2e-9, 15), base.grid(), base.solver(),
                 base.electromagnetic(),
-                new KwonTabakinOpticalPotentialSpec(new Complex(-0.44, 0.81), density));
+                new KwonTabakinOpticalPotentialSpec(new Complex(0.44, 0.83), density));
         var result = new ComplexKleinGordonCalculator().calculate(
                 problem, constants, CalculationMonitor.NONE);
         assertTrue(result.converged(), form.toString());
