@@ -7,7 +7,12 @@ import edu.cnu.bopit.calculation.CalculationCancelledException;
 import edu.cnu.bopit.calculation.CalculationMonitor;
 import edu.cnu.bopit.calculation.PointCoulombCalculator;
 import edu.cnu.bopit.calculation.PointCoulombResult;
+import edu.cnu.bopit.calculation.StrongInteractionCalculator;
+import edu.cnu.bopit.calculation.StrongInteractionResult;
 import edu.cnu.bopit.model.BopitProblem;
+import edu.cnu.bopit.model.ComplexInverseIterationSpec;
+import edu.cnu.bopit.model.NoStrongInteractionSpec;
+import org.apache.commons.math3.complex.Complex;
 import edu.cnu.bopit.physics.constants.PhysicalConstantSet;
 import edu.cnu.mdi.sim.ProgressInfo;
 import edu.cnu.mdi.sim.Simulation;
@@ -20,6 +25,7 @@ public final class BopitCalculationSimulation implements Simulation {
     private final PhysicalConstantSet constants;
     private volatile SimulationEngine engine;
     private volatile PointCoulombResult result;
+    private volatile StrongInteractionResult strongResult;
     private boolean executed;
 
     public BopitCalculationSimulation(BopitProblem problem, PhysicalConstantSet constants) {
@@ -38,9 +44,16 @@ public final class BopitCalculationSimulation implements Simulation {
         return Optional.ofNullable(result);
     }
 
+    /** Completed complex result when a strong interaction was selected. */
+    public Optional<StrongInteractionResult> strongResult() {
+        return Optional.ofNullable(strongResult);
+    }
+
     @Override
     public void init(SimulationContext context) {
-        requireEngine().postMessage("Point-Coulomb calculation ready");
+        requireEngine().postMessage(problem.strongInteraction() instanceof NoStrongInteractionSpec
+                ? "Electromagnetic calculation ready"
+                : "Complex strong-interaction calculation ready");
     }
 
     @Override
@@ -61,7 +74,17 @@ public final class BopitCalculationSimulation implements Simulation {
             }
         };
         try {
-            result = new PointCoulombCalculator().calculate(problem, constants, monitor);
+            if (problem.strongInteraction() instanceof NoStrongInteractionSpec) {
+                result = new PointCoulombCalculator().calculate(problem, constants, monitor);
+            } else {
+                var realSpec = problem.solver();
+                var complexSpec = new ComplexInverseIterationSpec(
+                        new Complex(realSpec.shiftMeV(), -0.001),
+                        realSpec.energyTolerance(), realSpec.residualTolerance(),
+                        realSpec.minimumIterations(), realSpec.maximumIterations());
+                strongResult = new StrongInteractionCalculator().calculate(
+                        problem, constants, complexSpec, monitor);
+            }
         } catch (CalculationCancelledException cancelled) {
             if (!context.isCancelRequested()) throw cancelled;
         }

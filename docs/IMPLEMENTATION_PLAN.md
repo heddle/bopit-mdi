@@ -255,14 +255,14 @@ published targets within documented tolerances.
 
 ### Tasks
 
-- [ ] Implement `StrongInteractionModel`.
-- [ ] Add `NoStrongInteraction`.
-- [ ] Add one simple published optical potential.
-- [ ] Support complex matrix assembly.
-- [ ] Add real-block conversion tests.
-- [ ] Calculate shift and width.
-- [ ] Verify sign and factor conventions.
-- [ ] Add momentum- and coordinate-space complex wavefunctions.
+- [✓] Implement `StrongInteractionModel`.
+- [✓] Add `NoStrongInteraction`.
+- [✓] Add one simple published optical potential.
+- [✓] Support complex matrix assembly.
+- [✓] Add real-block conversion tests.
+- [✓] Calculate shift and width.
+- [✓] Verify sign and factor conventions.
+- [✓] Add momentum- and coordinate-space complex wavefunctions.
 - [ ] Add published regression.
 
 ### Exit criterion

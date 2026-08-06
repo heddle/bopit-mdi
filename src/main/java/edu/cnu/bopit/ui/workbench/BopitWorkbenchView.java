@@ -27,12 +27,15 @@ import edu.cnu.bopit.ui.editor.AtomStateEditorPanel;
 import edu.cnu.bopit.ui.editor.GridEditorPanel;
 import edu.cnu.bopit.ui.editor.ElectromagneticEditorPanel;
 import edu.cnu.bopit.ui.editor.SolverEditorPanel;
+import edu.cnu.bopit.ui.editor.StrongInteractionEditorPanel;
 import edu.cnu.bopit.ui.view.ConvergenceView;
 import edu.cnu.bopit.ui.view.CoulombMatrixHeatmapView;
 import edu.cnu.bopit.ui.view.LandeDiagnosticView;
 import edu.cnu.bopit.ui.view.MomentumGridView;
 import edu.cnu.bopit.ui.view.SummaryResultView;
 import edu.cnu.bopit.ui.view.WavefunctionView;
+import edu.cnu.bopit.ui.view.ComplexWavefunctionView;
+import edu.cnu.bopit.ui.view.StrongInteractionSummaryView;
 import edu.cnu.mdi.sim.ProgressInfo;
 import edu.cnu.mdi.sim.SimulationContext;
 import edu.cnu.mdi.sim.SimulationEngine;
@@ -47,11 +50,13 @@ public final class BopitWorkbenchView extends BaseView implements SimulationList
     private static final Color ERROR_COLOR = new Color(150, 20, 20);
     private static final Color OK_COLOR = new Color(20, 105, 45);
     private static final String[] SECTIONS = {
-            "Atom and state", "Electromagnetism", "Momentum grid", "Solver" };
+            "Atom and state", "Electromagnetism", "Strong interaction", "Momentum grid", "Solver" };
 
     private final AtomStateEditorPanel atomEditor = new AtomStateEditorPanel(this::refreshValidation);
     private final ElectromagneticEditorPanel electromagneticEditor =
             new ElectromagneticEditorPanel(this::refreshValidation);
+    private final StrongInteractionEditorPanel strongEditor =
+            new StrongInteractionEditorPanel(this::refreshValidation);
     private final GridEditorPanel gridEditor = new GridEditorPanel(this::refreshValidation);
     private final SolverEditorPanel solverEditor = new SolverEditorPanel(this::refreshValidation);
     private final JTextArea validationText = new JTextArea(4, 60);
@@ -99,8 +104,9 @@ public final class BopitWorkbenchView extends BaseView implements SimulationList
         JPanel cards = new JPanel(new CardLayout());
         cards.add(atomEditor, SECTIONS[0]);
         cards.add(electromagneticEditor, SECTIONS[1]);
-        cards.add(gridEditor, SECTIONS[2]);
-        cards.add(solverEditor, SECTIONS[3]);
+        cards.add(strongEditor, SECTIONS[2]);
+        cards.add(gridEditor, SECTIONS[3]);
+        cards.add(solverEditor, SECTIONS[4]);
         sectionList.addListSelectionListener(event -> {
             if (!event.getValueIsAdjusting() && sectionList.getSelectedValue() != null) {
                 ((CardLayout) cards.getLayout()).show(cards, sectionList.getSelectedValue());
@@ -138,6 +144,7 @@ public final class BopitWorkbenchView extends BaseView implements SimulationList
         gridEditor.load(preset);
         solverEditor.load(preset);
         electromagneticEditor.loadPointCharge();
+        strongEditor.loadNone();
         status.setText("Loaded published kaonic sulfur-32 3d legacy-grid preset");
         refreshValidation();
     }
@@ -165,6 +172,12 @@ public final class BopitWorkbenchView extends BaseView implements SimulationList
             errors.addAll(electromagneticErrors);
             report = new ValidationReport(errors, report.warnings());
         }
+        List<String> strongErrors = strongEditor.validationErrors();
+        if (!strongErrors.isEmpty()) {
+            java.util.ArrayList<String> errors = new java.util.ArrayList<>(report.errors());
+            errors.addAll(strongErrors);
+            report = new ValidationReport(errors, report.warnings());
+        }
         List<String> messages = report.isValid()
                 ? (report.warnings().isEmpty() ? List.of("Input is valid.") : report.warnings())
                 : report.errors();
@@ -180,7 +193,7 @@ public final class BopitWorkbenchView extends BaseView implements SimulationList
         BopitProblem baseProblem = editorInput.toProblem();
         submittedProblem = new BopitProblem(baseProblem.atomicSystem(), baseProblem.quantumState(),
                 baseProblem.waveEquation(), baseProblem.grid(), baseProblem.solver(),
-                electromagneticEditor.values());
+                electromagneticEditor.values(), strongEditor.values());
         currentSimulation = new BopitCalculationSimulation(submittedProblem,
                 PublishedConstantSets.BOPIT_1990);
         SimulationEngine engine = new SimulationEngine(currentSimulation,
@@ -238,6 +251,12 @@ public final class BopitWorkbenchView extends BaseView implements SimulationList
             new LandeDiagnosticView(submittedProblem, result, PublishedConstantSets.BOPIT_1990);
             new CoulombMatrixHeatmapView(result);
             new WavefunctionView(result);
+        } else if (currentSimulation.strongResult().isPresent()) {
+            var strongResult = currentSimulation.strongResult().orElseThrow();
+            status.setText("Complex strong-interaction calculation complete");
+            new StrongInteractionSummaryView(submittedProblem, strongResult,
+                    context.getElapsedSeconds());
+            new ComplexWavefunctionView(strongResult);
         }
         setRunningUi(false);
     }
@@ -254,7 +273,8 @@ public final class BopitWorkbenchView extends BaseView implements SimulationList
     @Override
     public void onStateChange(SimulationContext context, SimulationState from,
             SimulationState to, String reason) {
-        if (to == SimulationState.TERMINATED && currentSimulation.result().isEmpty()) {
+        if (to == SimulationState.TERMINATED && currentSimulation.result().isEmpty()
+                && currentSimulation.strongResult().isEmpty()) {
             finishProgress();
             status.setText("Calculation cancelled");
             setRunningUi(false);
