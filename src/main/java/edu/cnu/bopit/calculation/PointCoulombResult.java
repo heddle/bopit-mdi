@@ -1,5 +1,7 @@
 package edu.cnu.bopit.calculation;
 
+import org.apache.commons.math3.linear.RealMatrix;
+
 import edu.cnu.bopit.grid.MomentumGrid;
 import edu.cnu.bopit.matrix.LandeMatrixDiagnostics;
 import edu.cnu.bopit.solver.InverseIterationResult;
@@ -8,10 +10,17 @@ import edu.cnu.bopit.solver.InverseIterationResult;
 public record PointCoulombResult(double reducedMassMeV, double referenceEnergyMeV,
         double calculatedEnergyMeV, double absoluteErrorMeV, double relativeError,
         MomentumGrid grid, LandeMatrixDiagnostics landeDiagnostics,
-        InverseIterationResult solverResult) {
+        InverseIterationResult solverResult, RealMatrix hamiltonianMeV,
+        RealMatrix coulombOperatorMeV) {
     public PointCoulombResult {
-        if (grid == null || landeDiagnostics == null || solverResult == null) {
+        if (grid == null || landeDiagnostics == null || solverResult == null
+                || hamiltonianMeV == null || coulombOperatorMeV == null) {
             throw new IllegalArgumentException("result artifacts are required");
         }
+        hamiltonianMeV = hamiltonianMeV.copy();
+        coulombOperatorMeV = coulombOperatorMeV.copy();
     }
+
+    @Override public RealMatrix hamiltonianMeV() { return hamiltonianMeV.copy(); }
+    @Override public RealMatrix coulombOperatorMeV() { return coulombOperatorMeV.copy(); }
 }

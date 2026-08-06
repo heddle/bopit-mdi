@@ -55,6 +55,7 @@ public final class PointCoulombCalculator {
         double absolute = Math.abs(calculated - reference);
         monitor.progress(1.0, "Calculation complete");
         return new PointCoulombResult(reducedMass, reference, calculated, absolute,
-                absolute / Math.abs(reference), grid, system.landeDiagnostics(), solverResult);
+                absolute / Math.abs(reference), grid, system.landeDiagnostics(), solverResult,
+                system.matrixMeV(), system.coulombOperatorMeV());
     }
 }

@@ -56,6 +56,10 @@ Run `edu.cnu.bopit.app.BopitApplication` as a Java application from Eclipse.
 The workbench opens with the published kaonic sulfur-32 3d legacy-grid preset
 loaded. Use **Run** to execute it on MDI's managed background engine; each
 successful calculation opens a retained summary view.
+Stage 4 also opens retained momentum-grid, inverse-iteration convergence,
+Landé-subtraction, and Coulomb-matrix diagnostic views. MDI plot feedback shows
+coordinates under the pointer, and the Gallery menu switches among related
+diagnostic plots.
 
 ## Design documents
 

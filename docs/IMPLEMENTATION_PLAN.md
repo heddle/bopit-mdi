@@ -178,31 +178,31 @@ Make the numerical method transparent and informative.
 
 ### Momentum-grid view
 
-- [ ] Plot point-Coulomb wavefunction magnitude on a log momentum axis.
-- [ ] Overlay grid points.
-- [ ] Mark nodes and region boundaries.
-- [ ] Distinguish atomic lobes and nuclear region.
-- [ ] Add useful hover feedback.
+- [✓] Plot point-Coulomb wavefunction magnitude on a log momentum axis.
+- [✓] Overlay grid points.
+- [✓] Mark nodes and region boundaries.
+- [✓] Distinguish atomic lobes and nuclear region.
+- [✓] Add useful hover feedback.
 
 ### Convergence view
 
-- [ ] Plot eigenvalue estimate by iteration.
-- [ ] Plot energy change.
-- [ ] Plot residual.
-- [ ] Refresh safely during a run where practical.
+- [✓] Plot eigenvalue estimate by iteration.
+- [✓] Plot energy change.
+- [✓] Plot residual.
+- [✓] Use the immutable completed history rather than unsafe mid-run mutation.
 
 ### Landé view
 
-- [ ] Select a grid point.
-- [ ] Plot the singular kernel away from the diagonal.
-- [ ] Plot the subtraction term.
-- [ ] Plot the regularized integrand.
-- [ ] Display analytic, discrete, and final diagonal contributions.
+- [✓] Select a grid point.
+- [✓] Plot the singular kernel away from the diagonal.
+- [✓] Plot the subtraction term.
+- [✓] Plot the regularized integrand.
+- [✓] Display analytic, discrete, and final diagonal contributions.
 
 ### Matrix view
 
-- [ ] Add optional heatmap for the Coulomb matrix.
-- [ ] Support linear and logarithmic magnitude.
+- [✓] Add optional heatmap for the Coulomb matrix.
+- [✓] Support linear and logarithmic magnitude.
 
 ### Exit criterion
 

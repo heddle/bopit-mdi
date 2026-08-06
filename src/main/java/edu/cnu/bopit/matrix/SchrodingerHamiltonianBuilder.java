@@ -16,13 +16,14 @@ public final class SchrodingerHamiltonianBuilder {
                 new PointCoulombKernel(atom.nuclearCharge(), constants.fineStructureConstant(),
                         constants.hbarCMeVFm()),
                 atom.nuclearCharge(), constants.fineStructureConstant(), constants.hbarCMeVFm());
-        RealMatrix hamiltonian = coulomb.operatorMeV();
+        RealMatrix coulombOperator = coulomb.operatorMeV();
+        RealMatrix hamiltonian = coulombOperator.copy();
         double reducedMass = ReducedMass.of(atom.particleMassMeV(), atom.nuclearMassMeV());
         double hbarC2 = constants.hbarCMeVFm() * constants.hbarCMeVFm();
         for (int i = 0; i < grid.size(); i++) {
             double p = grid.point(i);
             hamiltonian.addToEntry(i, i, hbarC2 * p * p / (2.0 * reducedMass));
         }
-        return new HamiltonianSystem(hamiltonian, grid, coulomb.diagnostics());
+        return new HamiltonianSystem(hamiltonian, coulombOperator, grid, coulomb.diagnostics());
     }
 }

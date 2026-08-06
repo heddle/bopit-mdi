@@ -26,6 +26,10 @@ import edu.cnu.bopit.physics.constants.PublishedConstantSets;
 import edu.cnu.bopit.ui.editor.AtomStateEditorPanel;
 import edu.cnu.bopit.ui.editor.GridEditorPanel;
 import edu.cnu.bopit.ui.editor.SolverEditorPanel;
+import edu.cnu.bopit.ui.view.ConvergenceView;
+import edu.cnu.bopit.ui.view.CoulombMatrixHeatmapView;
+import edu.cnu.bopit.ui.view.LandeDiagnosticView;
+import edu.cnu.bopit.ui.view.MomentumGridView;
 import edu.cnu.bopit.ui.view.SummaryResultView;
 import edu.cnu.mdi.sim.ProgressInfo;
 import edu.cnu.mdi.sim.SimulationContext;
@@ -211,8 +215,12 @@ public final class BopitWorkbenchView extends BaseView implements SimulationList
         finishProgress();
         PointCoulombResult result = currentSimulation.result().orElse(null);
         if (result != null) {
-            status.setText("Calculation complete; result retained in a new summary view");
+            status.setText("Calculation complete; retained result and diagnostic views opened");
             new SummaryResultView(submittedProblem, result, context.getElapsedSeconds());
+            new MomentumGridView(submittedProblem, result, PublishedConstantSets.BOPIT_1990);
+            new ConvergenceView(result);
+            new LandeDiagnosticView(submittedProblem, result, PublishedConstantSets.BOPIT_1990);
+            new CoulombMatrixHeatmapView(result);
         }
         setRunningUi(false);
     }

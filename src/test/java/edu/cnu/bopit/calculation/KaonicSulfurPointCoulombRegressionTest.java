@@ -1,6 +1,7 @@
 package edu.cnu.bopit.calculation;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
@@ -20,6 +21,10 @@ class KaonicSulfurPointCoulombRegressionTest {
         assertEquals(7.33663e-5, result.relativeError(), 2e-10);
         assertTrue(result.solverResult().history().get(
                 result.solverResult().history().size() - 1).residualNorm() <= 1e-10);
+        var matrixCopy = result.coulombOperatorMeV();
+        double original = matrixCopy.getEntry(0, 0);
+        matrixCopy.setEntry(0, 0, original + 1.0);
+        assertNotEquals(matrixCopy.getEntry(0, 0), result.coulombOperatorMeV().getEntry(0, 0));
     }
 
     @Test
