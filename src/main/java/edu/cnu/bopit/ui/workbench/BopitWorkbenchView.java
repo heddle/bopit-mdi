@@ -40,6 +40,7 @@ import edu.cnu.bopit.ui.view.StrongInteractionSummaryView;
 import edu.cnu.bopit.ui.view.KleinGordonSummaryView;
 import edu.cnu.bopit.ui.view.ComplexKleinGordonSummaryView;
 import edu.cnu.bopit.ui.view.DiracSummaryView;
+import edu.cnu.bopit.ui.study.ParameterStudyWorkbenchView;
 import edu.cnu.bopit.model.DiracSpec;
 import edu.cnu.mdi.sim.ProgressInfo;
 import edu.cnu.mdi.sim.SimulationContext;
@@ -92,10 +93,13 @@ public final class BopitWorkbenchView extends BaseView implements SimulationList
     private JPanel createToolbar() {
         JPanel toolbar = new JPanel(new FlowLayout(FlowLayout.LEFT));
         JButton presetButton = new JButton("Sulfur-32 3d preset");
+        JButton studyButton = new JButton("Parameter study…");
         presetButton.addActionListener(event -> loadSulfurPreset());
+        studyButton.addActionListener(event -> openParameterStudy());
         runButton.addActionListener(event -> runCalculation());
         cancelButton.addActionListener(event -> cancelCalculation());
         toolbar.add(presetButton);
+        toolbar.add(studyButton);
         toolbar.add(runButton);
         toolbar.add(cancelButton);
         return toolbar;
@@ -213,10 +217,7 @@ public final class BopitWorkbenchView extends BaseView implements SimulationList
         WorkbenchProblemInput editorInput = input();
         ValidationReport report = editorInput.validate();
         if (!report.isValid() || isCalculationActive()) return;
-        BopitProblem baseProblem = editorInput.toProblem();
-        submittedProblem = new BopitProblem(baseProblem.atomicSystem(), baseProblem.quantumState(),
-                equationEditor.value(), baseProblem.grid(), baseProblem.solver(),
-                electromagneticEditor.values(), strongEditor.values());
+        submittedProblem = configuredProblem(editorInput);
         currentSimulation = new BopitCalculationSimulation(submittedProblem,
                 PublishedConstantSets.BOPIT_1990);
         SimulationEngine engine = new SimulationEngine(currentSimulation,
@@ -228,6 +229,23 @@ public final class BopitWorkbenchView extends BaseView implements SimulationList
         progress.setIndeterminate(true);
         status.setText("Starting calculation…");
         engine.start();
+    }
+
+    private void openParameterStudy() {
+        ValidationReport report = input().validate();
+        if (!report.isValid() || !electromagneticEditor.validationErrors().isEmpty()
+                || !strongEditor.validationErrors().isEmpty()) {
+            status.setText("Correct invalid inputs before opening a parameter study");
+            return;
+        }
+        new ParameterStudyWorkbenchView(configuredProblem(input()), PublishedConstantSets.BOPIT_1990);
+    }
+
+    private BopitProblem configuredProblem(WorkbenchProblemInput editorInput) {
+        BopitProblem baseProblem = editorInput.toProblem();
+        return new BopitProblem(baseProblem.atomicSystem(), baseProblem.quantumState(),
+                equationEditor.value(), baseProblem.grid(), baseProblem.solver(),
+                electromagneticEditor.values(), strongEditor.values());
     }
 
     private void cancelCalculation() {

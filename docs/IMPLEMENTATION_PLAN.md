@@ -303,26 +303,26 @@ Use managed background execution to run one- and two-parameter studies.
 
 ### Tasks
 
-- [ ] Define `ParameterAxis`.
-- [ ] Add linear, logarithmic, and explicit-value axes.
-- [ ] Define study observables.
-- [ ] Run studies sequentially.
-- [ ] Preserve failed and non-converged points.
-- [ ] Add progress and cancellation.
-- [ ] Add sortable result table.
-- [ ] Add line plots.
-- [ ] Add two-axis heatmap.
-- [ ] Add CSV export.
+- [✓] Define `ParameterAxis`.
+- [✓] Add linear, logarithmic, and explicit-value axes.
+- [✓] Define study observables.
+- [✓] Run studies sequentially.
+- [✓] Preserve failed and non-converged points.
+- [✓] Add progress and cancellation.
+- [✓] Add sortable result table.
+- [✓] Add line plots.
+- [✓] Add two-axis heatmap.
+- [✓] Add CSV export.
 
 ### Named study templates
 
-- [ ] grid convergence;
-- [ ] cutoff stability;
-- [ ] adaptive versus legacy grid;
-- [ ] region-bias sensitivity;
-- [ ] strong-potential sensitivity;
-- [ ] finite-size sensitivity;
-- [ ] wave-equation comparison.
+- [✓] grid convergence;
+- [✓] cutoff stability;
+- [✓] adaptive versus legacy grid;
+- [✓] region-bias sensitivity;
+- [✓] strong-potential sensitivity;
+- [✓] finite-size sensitivity;
+- [✓] wave-equation comparison.
 
 ### Exit criterion
 
