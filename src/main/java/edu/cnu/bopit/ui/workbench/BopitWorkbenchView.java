@@ -51,16 +51,15 @@ import edu.cnu.bopit.model.DiracSpec;
 import edu.cnu.bopit.model.KwonTabakinOpticalPotentialSpec;
 import edu.cnu.bopit.model.OrbitingParticle;
 import edu.cnu.mdi.sim.ProgressInfo;
-import edu.cnu.mdi.sim.SimulationContext;
-import edu.cnu.mdi.sim.SimulationEngine;
-import edu.cnu.mdi.sim.SimulationEngineConfig;
-import edu.cnu.mdi.sim.SimulationListener;
-import edu.cnu.mdi.sim.SimulationState;
+import edu.cnu.mdi.sim.task.BackgroundTasks;
+import edu.cnu.mdi.sim.task.TaskHandle;
+import edu.cnu.mdi.sim.task.TaskListener;
 import edu.cnu.mdi.util.PropertyUtils;
 import edu.cnu.mdi.view.BaseView;
 
 /** Stage 3 workbench for configuring and running the validated vertical slice. */
-public final class BopitWorkbenchView extends BaseView implements SimulationListener {
+public final class BopitWorkbenchView extends BaseView
+        implements TaskListener<BopitCalculationOutcome> {
     private static final Color ERROR_COLOR = new Color(150, 20, 20);
     private static final Color OK_COLOR = new Color(20, 105, 45);
     private static final String[] SECTIONS = {
@@ -82,8 +81,7 @@ public final class BopitWorkbenchView extends BaseView implements SimulationList
     private final JButton runButton = new JButton("Run");
     private final JButton cancelButton = new JButton("Cancel");
 
-    private volatile SimulationEngine currentEngine;
-    private BopitCalculationSimulation currentSimulation;
+    private volatile TaskHandle<BopitCalculationOutcome> currentTask;
     private BopitProblem submittedProblem;
     private PointCoulombResult completedPointResult;
     private PhysicalConstantSet calculationConstants = PublishedConstantSets.PDG_2024;
@@ -332,17 +330,14 @@ public final class BopitWorkbenchView extends BaseView implements SimulationList
         ValidationReport report = editorInput.validate();
         if (!report.isValid() || isCalculationActive()) return;
         submittedProblem = configuredProblem(editorInput);
-        currentSimulation = new BopitCalculationSimulation(submittedProblem,
-                calculationConstants);
-        SimulationEngine engine = new SimulationEngine(currentSimulation,
-                new SimulationEngineConfig(0, 0, 0, true));
-        currentSimulation.bindEngine(engine);
-        engine.addListener(this);
-        currentEngine = engine;
+        TaskHandle<BopitCalculationOutcome> task = BackgroundTasks.create(
+                new BopitCalculationTask(submittedProblem, calculationConstants));
+        task.addListener(this);
+        currentTask = task;
         setRunningUi(true);
         progress.setIndeterminate(true);
         status.setText("Starting calculation…");
-        engine.start();
+        task.start();
     }
 
     private void openParameterStudy() {
@@ -363,18 +358,16 @@ public final class BopitWorkbenchView extends BaseView implements SimulationList
     }
 
     private void cancelCalculation() {
-        SimulationEngine engine = currentEngine;
-        if (engine != null) {
+        TaskHandle<BopitCalculationOutcome> task = currentTask;
+        if (task != null) {
             status.setText("Cancellation requested…");
-            engine.requestCancel();
+            task.cancel();
         }
     }
 
     private boolean isCalculationActive() {
-        SimulationEngine engine = currentEngine;
-        if (engine == null) return false;
-        SimulationState state = engine.getState();
-        return state != SimulationState.TERMINATED && state != SimulationState.FAILED;
+        TaskHandle<BopitCalculationOutcome> task = currentTask;
+        return task != null && !task.isCompleted();
     }
 
     private void setRunningUi(boolean running) {
@@ -383,57 +376,59 @@ public final class BopitWorkbenchView extends BaseView implements SimulationList
     }
 
     @Override
-    public void onProgress(SimulationContext context, ProgressInfo info) {
+    public void onProgress(TaskHandle<BopitCalculationOutcome> task, ProgressInfo info) {
         progress.setIndeterminate(info.indeterminate);
         if (!info.indeterminate) progress.setValue((int) Math.round(1000.0 * info.fraction));
         if (info.message != null) progress.setString(info.message);
     }
 
     @Override
-    public void onMessage(SimulationContext context, String message) {
+    public void onMessage(TaskHandle<BopitCalculationOutcome> task, String message) {
         status.setText(message);
     }
 
     @Override
-    public void onDone(SimulationContext context) {
+    public void onSucceeded(TaskHandle<BopitCalculationOutcome> task,
+            BopitCalculationOutcome outcome) {
         finishProgress();
-        PointCoulombResult result = currentSimulation.result().orElse(null);
-        if (result != null) {
+        double elapsedSeconds = task.getElapsedSeconds();
+        if (outcome instanceof BopitCalculationOutcome.PointCoulomb point) {
+            PointCoulombResult result = point.result();
             completedPointResult = result;
             status.setText("Calculation complete; retained result and diagnostic views opened");
-            new SummaryResultView(submittedProblem, result, context.getElapsedSeconds());
+            new SummaryResultView(submittedProblem, result, elapsedSeconds);
             new MomentumGridView(submittedProblem, result, calculationConstants);
             new ConvergenceView(result);
             new LandeDiagnosticView(submittedProblem, result, calculationConstants);
             new CoulombMatrixHeatmapView(result);
             new WavefunctionView(result);
-        } else if (currentSimulation.strongResult().isPresent()) {
-            var strongResult = currentSimulation.strongResult().orElseThrow();
+        } else if (outcome instanceof BopitCalculationOutcome.StrongInteraction strong) {
+            var strongResult = strong.result();
             status.setText("Complex strong-interaction calculation complete");
             new StrongInteractionSummaryView(submittedProblem, strongResult,
-                    context.getElapsedSeconds());
+                    elapsedSeconds);
             new ComplexWavefunctionView(strongResult);
-        } else if (currentSimulation.kleinGordonResult().isPresent()) {
-            var kleinGordon = currentSimulation.kleinGordonResult().orElseThrow();
+        } else if (outcome instanceof BopitCalculationOutcome.KleinGordon kg) {
+            var kleinGordon = kg.result();
             status.setText("Klein-Gordon calculation complete");
             new KleinGordonSummaryView(submittedProblem, kleinGordon,
-                    context.getElapsedSeconds());
-        } else if (currentSimulation.complexKleinGordonResult().isPresent()) {
-            var complexKg = currentSimulation.complexKleinGordonResult().orElseThrow();
+                    elapsedSeconds);
+        } else if (outcome instanceof BopitCalculationOutcome.ComplexKleinGordon kg) {
+            var complexKg = kg.result();
             status.setText("Complex Klein-Gordon calculation complete");
             new ComplexKleinGordonSummaryView(submittedProblem, complexKg,
-                    context.getElapsedSeconds());
+                    elapsedSeconds);
             new ComplexWavefunctionView(complexKg);
-        } else if (currentSimulation.diracResult().isPresent()) {
-            var dirac = currentSimulation.diracResult().orElseThrow();
+        } else if (outcome instanceof BopitCalculationOutcome.Dirac diracOutcome) {
+            var dirac = diracOutcome.result();
             status.setText("Dirac calculation complete");
-            new DiracSummaryView(submittedProblem, dirac, context.getElapsedSeconds());
+            new DiracSummaryView(submittedProblem, dirac, elapsedSeconds);
         }
         setRunningUi(false);
     }
 
     @Override
-    public void onFail(SimulationContext context, Throwable error) {
+    public void onFailed(TaskHandle<BopitCalculationOutcome> task, Throwable error) {
         finishProgress();
         status.setText("Calculation failed: " + error.getMessage());
         validationText.setForeground(ERROR_COLOR);
@@ -442,17 +437,10 @@ public final class BopitWorkbenchView extends BaseView implements SimulationList
     }
 
     @Override
-    public void onStateChange(SimulationContext context, SimulationState from,
-            SimulationState to, String reason) {
-        if (to == SimulationState.TERMINATED && currentSimulation.result().isEmpty()
-                && currentSimulation.strongResult().isEmpty()
-                && currentSimulation.kleinGordonResult().isEmpty()
-                && currentSimulation.complexKleinGordonResult().isEmpty()
-                && currentSimulation.diracResult().isEmpty()) {
-            finishProgress();
-            status.setText("Calculation cancelled");
-            setRunningUi(false);
-        }
+    public void onCancelled(TaskHandle<BopitCalculationOutcome> task) {
+        finishProgress();
+        status.setText("Calculation cancelled");
+        setRunningUi(false);
     }
 
     private void finishProgress() {

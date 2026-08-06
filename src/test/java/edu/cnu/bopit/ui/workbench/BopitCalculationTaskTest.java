@@ -8,51 +8,44 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
-import javax.swing.SwingUtilities;
-
 import org.junit.jupiter.api.Test;
 
 import edu.cnu.bopit.calculation.PublishedProblems;
 import edu.cnu.bopit.physics.constants.PublishedConstantSets;
-import edu.cnu.mdi.sim.SimulationEngine;
-import edu.cnu.mdi.sim.SimulationEngineConfig;
-import edu.cnu.mdi.sim.SimulationContext;
-import edu.cnu.mdi.sim.SimulationListener;
+import edu.cnu.mdi.sim.CompletionStatus;
+import edu.cnu.mdi.sim.task.BackgroundTasks;
+import edu.cnu.mdi.sim.task.TaskHandle;
+import edu.cnu.mdi.sim.task.TaskListener;
 
-class BopitCalculationSimulationTest {
+class BopitCalculationTaskTest {
     static {
         System.setProperty("java.awt.headless", "true");
     }
 
     @Test
-    void engineRunsCalculationAndRetainsResult() throws Exception {
+    void taskRunsCalculationAndReturnsTypedOutcome() throws Exception {
         var constants = PublishedConstantSets.BOPIT_1990;
         var problem = PublishedProblems.kaonicSulfur32Legacy3d(constants, 40, 10);
-        var simulation = new BopitCalculationSimulation(problem, constants);
-        var engine = new SimulationEngine(simulation,
-                new SimulationEngineConfig(0, 0, 0, true));
-        simulation.bindEngine(engine);
+        TaskHandle<BopitCalculationOutcome> task = BackgroundTasks.create(
+                new BopitCalculationTask(problem, constants));
         CountDownLatch terminated = new CountDownLatch(1);
         AtomicReference<Throwable> failure = new AtomicReference<>();
-        engine.addListener(new SimulationListener() {
-            @Override
-            public void onDone(SimulationContext context) {
-                terminated.countDown();
-            }
-
-            @Override
-            public void onFail(SimulationContext context, Throwable error) {
+        task.addListener(new TaskListener<>() {
+            @Override public void onFailed(TaskHandle<BopitCalculationOutcome> source,
+                    Throwable error) {
                 failure.set(error);
+            }
+            @Override public void onCompleted(TaskHandle<BopitCalculationOutcome> source,
+                    CompletionStatus status, Throwable error) {
                 terminated.countDown();
             }
         });
 
-        engine.start();
+        task.start();
         assertTrue(terminated.await(10, TimeUnit.SECONDS), "background calculation timed out");
-        SwingUtilities.invokeAndWait(() -> { });
         assertNull(failure.get());
 
-        var result = simulation.result().orElseThrow();
-        assertEquals(-0.367806279690, result.calculatedEnergyMeV(), 2e-12);
+        var outcome = (BopitCalculationOutcome.PointCoulomb) task.getResult();
+        assertEquals(-0.367806279690, outcome.result().calculatedEnergyMeV(), 2e-12);
     }
 }

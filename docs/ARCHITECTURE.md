@@ -16,8 +16,12 @@ The central workflow is:
 7. retain, compare, export, and study results.
 
 This is primarily a scientific workbench, not a time-domain simulation.
-Nevertheless, MDI's simulation mechanism can provide managed background
-execution, progress, pause/cancel behavior, diagnostics, and parameter sweeps.
+Individual calculations and parameter studies therefore use MDI's typed
+one-shot `BackgroundTask`/`TaskHandle` API. That API supplies managed background
+execution, progress, cooperative cancellation, and EDT-safe completion without
+forcing a calculation into an artificial step-oriented simulation. MDI's
+step-based `Simulation` API remains appropriate for genuinely iterative or
+time-evolving applications.
 
 ## 2. Goals
 

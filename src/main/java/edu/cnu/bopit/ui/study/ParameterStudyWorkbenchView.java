@@ -26,18 +26,19 @@ import edu.cnu.bopit.study.LogarithmicParameterAxis;
 import edu.cnu.bopit.study.NamedStudyTemplates;
 import edu.cnu.bopit.study.ParameterAxis;
 import edu.cnu.bopit.study.ParameterStudy;
+import edu.cnu.bopit.study.ParameterStudyResult;
 import edu.cnu.bopit.study.ParameterTarget;
 import edu.cnu.bopit.study.StudyObservable;
 import edu.cnu.mdi.sim.ProgressInfo;
-import edu.cnu.mdi.sim.SimulationContext;
-import edu.cnu.mdi.sim.SimulationEngine;
-import edu.cnu.mdi.sim.SimulationEngineConfig;
-import edu.cnu.mdi.sim.SimulationListener;
+import edu.cnu.mdi.sim.task.BackgroundTasks;
+import edu.cnu.mdi.sim.task.TaskHandle;
+import edu.cnu.mdi.sim.task.TaskListener;
 import edu.cnu.mdi.util.PropertyUtils;
 import edu.cnu.mdi.view.BaseView;
 
 /** Configures and runs named or custom one-/two-axis studies. */
-public final class ParameterStudyWorkbenchView extends BaseView implements SimulationListener {
+public final class ParameterStudyWorkbenchView extends BaseView
+        implements TaskListener<ParameterStudyResult> {
     private enum Template {
         CUSTOM, GRID_CONVERGENCE, CUTOFF_STABILITY, ADAPTIVE_VS_LEGACY,
         REGION_BIAS, STRONG_SENSITIVITY, FINITE_SIZE, WAVE_EQUATION
@@ -57,8 +58,7 @@ public final class ParameterStudyWorkbenchView extends BaseView implements Simul
     private final JButton cancel = new JButton("Cancel");
     private final JProgressBar progress = new JProgressBar(0, 1000);
     private final JLabel status = new JLabel("Ready");
-    private volatile SimulationEngine engine;
-    private ParameterStudySimulation simulation;
+    private volatile TaskHandle<ParameterStudyResult> task;
     private ParameterStudy loadedStudy;
 
     public ParameterStudyWorkbenchView(BopitProblem base, PhysicalConstantSet constants) {
@@ -91,7 +91,7 @@ public final class ParameterStudyWorkbenchView extends BaseView implements Simul
         south.add(progress, BorderLayout.SOUTH);
         getContentPane().add(south, BorderLayout.SOUTH);
         run.addActionListener(event -> runStudy());
-        cancel.addActionListener(event -> { if (engine != null) engine.requestCancel(); });
+        cancel.addActionListener(event -> { if (task != null) task.cancel(); });
         cancel.setEnabled(false);
     }
 
@@ -111,12 +111,10 @@ public final class ParameterStudyWorkbenchView extends BaseView implements Simul
         ParameterStudy study;
         try { study = createStudy(); }
         catch (RuntimeException failure) { status.setText("Invalid study: " + failure.getMessage()); return; }
-        simulation = new ParameterStudySimulation(study, constants);
-        engine = new SimulationEngine(simulation, new SimulationEngineConfig(0, 0, 0, true));
-        simulation.bindEngine(engine);
-        engine.addListener(this);
+        task = BackgroundTasks.create(new ParameterStudyTask(study, constants));
+        task.addListener(this);
         run.setEnabled(false); cancel.setEnabled(true);
-        engine.start();
+        task.start();
     }
 
     private ParameterStudy createStudy() {
@@ -180,29 +178,32 @@ public final class ParameterStudyWorkbenchView extends BaseView implements Simul
                 JOptionPane.ERROR_MESSAGE);
     }
 
-    @Override public void onProgress(SimulationContext context, ProgressInfo info) {
+    @Override public void onProgress(TaskHandle<ParameterStudyResult> source,
+            ProgressInfo info) {
         progress.setValue((int) Math.round(1000 * info.fraction));
         progress.setString(info.message);
     }
-    @Override public void onMessage(SimulationContext context, String message) { status.setText(message); }
-    @Override public void onDone(SimulationContext context) {
+    @Override public void onMessage(TaskHandle<ParameterStudyResult> source,
+            String message) { status.setText(message); }
+    @Override public void onSucceeded(TaskHandle<ParameterStudyResult> source,
+            ParameterStudyResult result) {
         finish(false);
-        new ParameterStudyResultView(simulation.result(false),
+        new ParameterStudyResultView(result,
                 (StudyObservable) plottedObservable.getSelectedItem());
     }
-    @Override public void onFail(SimulationContext context, Throwable error) {
+    @Override public void onFailed(TaskHandle<ParameterStudyResult> source,
+            Throwable error) {
         status.setText("Study failed: " + error.getMessage()); run.setEnabled(true); cancel.setEnabled(false);
     }
-    @Override public void onStateChange(SimulationContext context,
-            edu.cnu.mdi.sim.SimulationState from, edu.cnu.mdi.sim.SimulationState to, String reason) {
-        if (to == edu.cnu.mdi.sim.SimulationState.TERMINATED
-                && context.isCancelRequested()) finish(true);
+    @Override public void onCancelled(TaskHandle<ParameterStudyResult> source) {
+        finish(true);
     }
     private void finish(boolean cancelled) {
         run.setEnabled(true); cancel.setEnabled(false);
         status.setText(cancelled ? "Study cancelled; completed points retained" : "Study complete");
-        if (cancelled && simulation != null && !simulation.result(true).points().isEmpty()) {
-            new ParameterStudyResultView(simulation.result(true),
+        var result = task == null ? null : task.getResult();
+        if (cancelled && result != null && !result.points().isEmpty()) {
+            new ParameterStudyResultView(result,
                     (StudyObservable) plottedObservable.getSelectedItem());
         }
     }
