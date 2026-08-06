@@ -38,8 +38,9 @@ import edu.cnu.bopit.ui.view.WavefunctionView;
 import edu.cnu.bopit.ui.view.ComplexWavefunctionView;
 import edu.cnu.bopit.ui.view.StrongInteractionSummaryView;
 import edu.cnu.bopit.ui.view.KleinGordonSummaryView;
-import edu.cnu.bopit.model.KleinGordonSpec;
-import edu.cnu.bopit.model.NoStrongInteractionSpec;
+import edu.cnu.bopit.ui.view.ComplexKleinGordonSummaryView;
+import edu.cnu.bopit.ui.view.DiracSummaryView;
+import edu.cnu.bopit.model.DiracSpec;
 import edu.cnu.mdi.sim.ProgressInfo;
 import edu.cnu.mdi.sim.SimulationContext;
 import edu.cnu.mdi.sim.SimulationEngine;
@@ -187,10 +188,17 @@ public final class BopitWorkbenchView extends BaseView implements SimulationList
             errors.addAll(strongErrors);
             report = new ValidationReport(errors, report.warnings());
         }
-        if (strongErrors.isEmpty() && equationEditor.value() instanceof KleinGordonSpec
-                && !(strongEditor.values() instanceof NoStrongInteractionSpec)) {
+        if (strongErrors.isEmpty() && equationEditor.value() instanceof DiracSpec dirac) {
+            int expectedL = dirac.kappa() < 0 ? -dirac.kappa() - 1 : dirac.kappa();
             java.util.ArrayList<String> errors = new java.util.ArrayList<>(report.errors());
-            errors.add("The current Klein-Gordon increment supports electromagnetic potentials only.");
+            if (dirac.kappa() == 0) errors.add("Dirac kappa cannot be zero.");
+            if (atomEditor.values().orbitalL() != expectedL) {
+                errors.add("For Dirac kappa=" + dirac.kappa()
+                        + ", orbital l must be " + expectedL + ".");
+            }
+            if (!(strongEditor.values() instanceof edu.cnu.bopit.model.NoStrongInteractionSpec)) {
+                errors.add("The current Dirac implementation does not include a strong interaction.");
+            }
             report = new ValidationReport(errors, report.warnings());
         }
         List<String> messages = report.isValid()
@@ -277,6 +285,16 @@ public final class BopitWorkbenchView extends BaseView implements SimulationList
             status.setText("Klein-Gordon calculation complete");
             new KleinGordonSummaryView(submittedProblem, kleinGordon,
                     context.getElapsedSeconds());
+        } else if (currentSimulation.complexKleinGordonResult().isPresent()) {
+            var complexKg = currentSimulation.complexKleinGordonResult().orElseThrow();
+            status.setText("Complex Klein-Gordon calculation complete");
+            new ComplexKleinGordonSummaryView(submittedProblem, complexKg,
+                    context.getElapsedSeconds());
+            new ComplexWavefunctionView(complexKg);
+        } else if (currentSimulation.diracResult().isPresent()) {
+            var dirac = currentSimulation.diracResult().orElseThrow();
+            status.setText("Dirac calculation complete");
+            new DiracSummaryView(submittedProblem, dirac, context.getElapsedSeconds());
         }
         setRunningUi(false);
     }
@@ -295,7 +313,9 @@ public final class BopitWorkbenchView extends BaseView implements SimulationList
             SimulationState to, String reason) {
         if (to == SimulationState.TERMINATED && currentSimulation.result().isEmpty()
                 && currentSimulation.strongResult().isEmpty()
-                && currentSimulation.kleinGordonResult().isEmpty()) {
+                && currentSimulation.kleinGordonResult().isEmpty()
+                && currentSimulation.complexKleinGordonResult().isEmpty()
+                && currentSimulation.diracResult().isEmpty()) {
             finishProgress();
             status.setText("Calculation cancelled");
             setRunningUi(false);

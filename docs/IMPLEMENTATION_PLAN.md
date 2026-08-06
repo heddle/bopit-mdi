@@ -279,16 +279,16 @@ and width.
 
 ### Klein–Gordon
 
-- [ ] Implement explicitly named forms.
+- [✓] Implement explicitly named forms.
 - [✓] Implement outer energy iteration.
 - [✓] Retain inner and outer convergence histories.
-- [ ] Add published comparisons.
+- [✓] Add published comparisons.
 
 ### Dirac
 
-- [ ] Implement coupled large/small components.
-- [ ] Separate physical and complex block structures.
-- [ ] Add point-Coulomb validation.
+- [✓] Implement coupled large/small components.
+- [✓] Separate physical and complex block structures.
+- [✓] Add point-Coulomb validation.
 
 ### Exit criterion
 

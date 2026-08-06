@@ -5,6 +5,8 @@ import java.awt.Color;
 import org.apache.commons.math3.complex.Complex;
 
 import edu.cnu.bopit.calculation.StrongInteractionResult;
+import edu.cnu.bopit.calculation.ComplexKleinGordonResult;
+import edu.cnu.bopit.physics.wavefunction.ComplexWavefunctions;
 import edu.cnu.bopit.ui.plot.PlotSupport;
 import edu.cnu.mdi.graphics.style.SymbolType;
 import edu.cnu.mdi.splot.fit.CurveDrawingMethod;
@@ -18,15 +20,23 @@ import edu.cnu.mdi.view.BaseView;
 /** Real, imaginary, and magnitude plots for a complex Gamow-like state. */
 public final class ComplexWavefunctionView extends BaseView {
     public ComplexWavefunctionView(StrongInteractionResult result) {
+        this(result.wavefunctions());
+    }
+
+    public ComplexWavefunctionView(ComplexKleinGordonResult result) {
+        this(result.wavefunctions());
+    }
+
+    private ComplexWavefunctionView(ComplexWavefunctions wavefunctions) {
         super(PropertyUtils.TITLE, "Complex Wavefunction Diagnostics",
                 PropertyUtils.WIDTH, 850, PropertyUtils.HEIGHT, 650,
                 PropertyUtils.USECONTAINER, false);
         MultiplotPanel plots = new MultiplotPanel(true);
-        var momentum = result.wavefunctions().momentum();
+        var momentum = wavefunctions.momentum();
         plots.addPlot("Momentum space", plot(momentum.momentaFmInverse(),
                 momentum.radialValuesFmThreeHalves(), "Complex momentum wavefunction",
                 "Momentum p (fm^-1)", "phi_l(p) (fm^(3/2))", true));
-        var coordinate = result.wavefunctions().coordinate();
+        var coordinate = wavefunctions.coordinate();
         plots.addPlot("Coordinate space", plot(coordinate.radiiFm(),
                 coordinate.radialValuesFmMinusThreeHalves(), "Complex coordinate wavefunction",
                 "Radius r (fm)", "R_l(r) (fm^(-3/2))", false));

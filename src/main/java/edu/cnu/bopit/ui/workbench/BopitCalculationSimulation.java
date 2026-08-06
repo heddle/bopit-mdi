@@ -11,10 +11,15 @@ import edu.cnu.bopit.calculation.StrongInteractionCalculator;
 import edu.cnu.bopit.calculation.StrongInteractionResult;
 import edu.cnu.bopit.calculation.KleinGordonCalculator;
 import edu.cnu.bopit.calculation.KleinGordonResult;
+import edu.cnu.bopit.calculation.ComplexKleinGordonCalculator;
+import edu.cnu.bopit.calculation.ComplexKleinGordonResult;
+import edu.cnu.bopit.calculation.DiracCalculator;
+import edu.cnu.bopit.calculation.DiracResult;
 import edu.cnu.bopit.model.BopitProblem;
 import edu.cnu.bopit.model.ComplexInverseIterationSpec;
 import edu.cnu.bopit.model.NoStrongInteractionSpec;
 import edu.cnu.bopit.model.KleinGordonSpec;
+import edu.cnu.bopit.model.DiracSpec;
 import org.apache.commons.math3.complex.Complex;
 import edu.cnu.bopit.physics.constants.PhysicalConstantSet;
 import edu.cnu.mdi.sim.ProgressInfo;
@@ -30,6 +35,8 @@ public final class BopitCalculationSimulation implements Simulation {
     private volatile PointCoulombResult result;
     private volatile StrongInteractionResult strongResult;
     private volatile KleinGordonResult kleinGordonResult;
+    private volatile ComplexKleinGordonResult complexKleinGordonResult;
+    private volatile DiracResult diracResult;
     private boolean executed;
 
     public BopitCalculationSimulation(BopitProblem problem, PhysicalConstantSet constants) {
@@ -58,6 +65,14 @@ public final class BopitCalculationSimulation implements Simulation {
         return Optional.ofNullable(kleinGordonResult);
     }
 
+    /** Completed complex Klein-Gordon result. */
+    public Optional<ComplexKleinGordonResult> complexKleinGordonResult() {
+        return Optional.ofNullable(complexKleinGordonResult);
+    }
+
+    /** Completed point/electromagnetic Dirac result. */
+    public Optional<DiracResult> diracResult() { return Optional.ofNullable(diracResult); }
+
     @Override
     public void init(SimulationContext context) {
         requireEngine().postMessage(problem.strongInteraction() instanceof NoStrongInteractionSpec
@@ -83,8 +98,15 @@ public final class BopitCalculationSimulation implements Simulation {
             }
         };
         try {
-            if (problem.waveEquation() instanceof KleinGordonSpec) {
-                kleinGordonResult = new KleinGordonCalculator().calculate(problem, constants, monitor);
+            if (problem.waveEquation() instanceof DiracSpec) {
+                diracResult = new DiracCalculator().calculate(problem, constants, monitor);
+            } else if (problem.waveEquation() instanceof KleinGordonSpec) {
+                if (problem.strongInteraction() instanceof NoStrongInteractionSpec) {
+                    kleinGordonResult = new KleinGordonCalculator().calculate(problem, constants, monitor);
+                } else {
+                    complexKleinGordonResult = new ComplexKleinGordonCalculator().calculate(
+                            problem, constants, monitor);
+                }
             } else if (problem.strongInteraction() instanceof NoStrongInteractionSpec) {
                 result = new PointCoulombCalculator().calculate(problem, constants, monitor);
             } else {
