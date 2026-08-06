@@ -19,12 +19,12 @@ import edu.cnu.bopit.ui.plot.PlotSupport;
 import edu.cnu.mdi.graphics.style.SymbolType;
 import edu.cnu.mdi.splot.fit.CurveDrawingMethod;
 import edu.cnu.mdi.splot.pdata.Curve;
-import edu.cnu.mdi.splot.plot.MultiplotPanel;
+import edu.cnu.mdi.splot.plot.PlotDeck;
 import edu.cnu.mdi.splot.plot.PlotCanvas;
 import edu.cnu.mdi.splot.plot.PlotPanel;
 import edu.cnu.mdi.splot.plot.PlotParameters.AxisScale;
 import edu.cnu.mdi.splot.plot.VerticalLine;
-import edu.cnu.mdi.util.PropertyUtils;
+import edu.cnu.mdi.view.ViewPropertiesBuilder;
 import edu.cnu.mdi.view.BaseView;
 
 /** Interactive inspection of the point-Coulomb Landé subtraction at one grid point. */
@@ -43,9 +43,8 @@ public final class LandeDiagnosticView extends BaseView {
 
     public LandeDiagnosticView(BopitProblem problem, PointCoulombResult result,
             PhysicalConstantSet constants) {
-        super(PropertyUtils.TITLE, "Landé Subtraction Diagnostics",
-                PropertyUtils.WIDTH, 850, PropertyUtils.HEIGHT, 650,
-                PropertyUtils.USECONTAINER, false);
+        super(new ViewPropertiesBuilder().title("Landé Subtraction Diagnostics")
+                .width(850).height(650).useContainer(false).buildOptions());
         this.problem = problem;
         this.result = result;
         this.constants = constants;
@@ -76,7 +75,7 @@ public final class LandeDiagnosticView extends BaseView {
         regularizedCanvas = canvas(regularizedData, "Finite Landé-regularized integrand",
                 "Regularized integrand (arbitrary scale)");
 
-        MultiplotPanel gallery = new MultiplotPanel(true);
+        PlotDeck gallery = new PlotDeck(true);
         gallery.addPlot("Singular kernel", new PlotPanel(kernelCanvas));
         gallery.addPlot("Subtraction terms", new PlotPanel(integrandCanvas));
         gallery.addPlot("Regularized integrand", new PlotPanel(regularizedCanvas));

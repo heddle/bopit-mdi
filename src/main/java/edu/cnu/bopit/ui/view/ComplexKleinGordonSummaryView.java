@@ -14,16 +14,15 @@ import edu.cnu.bopit.model.KwonTabakinOpticalPotentialSpec;
 import edu.cnu.bopit.model.KleinGordonSpec;
 import edu.cnu.bopit.model.KleinGordonForm;
 import edu.cnu.bopit.model.FermiChargeSpec;
-import edu.cnu.mdi.util.PropertyUtils;
+import edu.cnu.mdi.view.ViewPropertiesBuilder;
 import edu.cnu.mdi.view.BaseView;
 
 /** Complex Klein-Gordon shift, width, and nested convergence report. */
 public final class ComplexKleinGordonSummaryView extends BaseView {
     public ComplexKleinGordonSummaryView(BopitProblem problem,
             ComplexKleinGordonResult result, double elapsedSeconds) {
-        super(PropertyUtils.TITLE, "Complex Klein-Gordon Result",
-                PropertyUtils.WIDTH, 740, PropertyUtils.HEIGHT, 560,
-                PropertyUtils.USECONTAINER, false);
+        super(new ViewPropertiesBuilder().title("Complex Klein-Gordon Result")
+                .width(740).height(560).useContainer(false).buildOptions());
         var energy = result.bindingEnergyMeV();
         StringBuilder text = new StringBuilder();
         text.append("COMPLEX KLEIN-GORDON RESULT\n\n");

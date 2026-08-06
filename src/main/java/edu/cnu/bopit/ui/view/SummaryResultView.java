@@ -13,17 +13,15 @@ import edu.cnu.bopit.grid.AdaptiveGridDiagnostics;
 import edu.cnu.bopit.model.BopitProblem;
 import edu.cnu.bopit.model.SchrodingerSpec;
 import edu.cnu.bopit.solver.IterationRecord;
-import edu.cnu.mdi.util.PropertyUtils;
+import edu.cnu.mdi.view.ViewPropertiesBuilder;
 import edu.cnu.mdi.view.BaseView;
 
 /** Retained textual summary of one completed point-Coulomb calculation. */
 public final class SummaryResultView extends BaseView {
     public SummaryResultView(BopitProblem problem, PointCoulombResult result,
             double elapsedSeconds) {
-        super(PropertyUtils.TITLE, title(problem),
-                PropertyUtils.WIDTH, 650,
-                PropertyUtils.HEIGHT, 520,
-                PropertyUtils.USECONTAINER, false);
+        super(new ViewPropertiesBuilder().title(title(problem))
+                .width(650).height(520).useContainer(false).buildOptions());
         JTextArea summary = new JTextArea(format(problem, result, elapsedSeconds));
         summary.setEditable(false);
         summary.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 13));

@@ -8,17 +8,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.JButton;
-import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTable;
-import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.DefaultTableModel;
 
 import edu.cnu.bopit.study.ParameterStudyResult;
 import edu.cnu.bopit.persistence.BopitJsonPersistence;
+import edu.cnu.bopit.ui.BopitFileTypes;
 import edu.cnu.bopit.study.StudyCsvExporter;
 import edu.cnu.bopit.study.StudyObservable;
 import edu.cnu.bopit.study.StudyPointStatus;
@@ -28,10 +27,11 @@ import edu.cnu.mdi.splot.fit.CurveDrawingMethod;
 import edu.cnu.mdi.splot.pdata.Histo2DData;
 import edu.cnu.mdi.splot.pdata.PlotData;
 import edu.cnu.mdi.splot.pdata.PlotDataException;
-import edu.cnu.mdi.splot.plot.MultiplotPanel;
+import edu.cnu.mdi.splot.plot.PlotDeck;
+import edu.cnu.mdi.dialog.FileDialogs;
 import edu.cnu.mdi.splot.plot.PlotCanvas;
 import edu.cnu.mdi.splot.plot.PlotPanel;
-import edu.cnu.mdi.util.PropertyUtils;
+import edu.cnu.mdi.view.ViewPropertiesBuilder;
 import edu.cnu.mdi.view.BaseView;
 
 /** Sortable retained study table with line/heatmap visualization and CSV export. */
@@ -40,9 +40,8 @@ public final class ParameterStudyResultView extends BaseView {
     private final JLabel message = new JLabel(" ");
 
     public ParameterStudyResultView(ParameterStudyResult result, StudyObservable requested) {
-        super(PropertyUtils.TITLE, "Study: " + result.study().name(),
-                PropertyUtils.WIDTH, 980, PropertyUtils.HEIGHT, 700,
-                PropertyUtils.USECONTAINER, false);
+        super(new ViewPropertiesBuilder().title("Study: " + result.study().name())
+                .width(980).height(700).useContainer(false).buildOptions());
         this.result = result;
         StudyObservable observable = result.study().observables().contains(requested)
                 ? requested : result.study().observables().get(0);
@@ -93,7 +92,7 @@ public final class ParameterStudyResultView extends BaseView {
     }
 
     private static JPanel plots(ParameterStudyResult result, StudyObservable observable) {
-        MultiplotPanel plots = new MultiplotPanel(true);
+        PlotDeck plots = new PlotDeck(true);
         if (result.study().axes().size() == 1) plots.addPlot(observable.label(), linePlot(result, observable));
         else plots.addPlot(observable.label(), heatmap(result, observable));
         return plots;
@@ -142,15 +141,10 @@ public final class ParameterStudyResultView extends BaseView {
     }
 
     private void exportCsv() {
-        JFileChooser chooser = new JFileChooser();
-        chooser.setDialogTitle("Export study CSV");
-        chooser.setFileFilter(new FileNameExtensionFilter("CSV files", "csv"));
-        chooser.setSelectedFile(new java.io.File("bopit-study.csv"));
-        if (chooser.showSaveDialog(getContentPane()) != JFileChooser.APPROVE_OPTION) return;
-        java.nio.file.Path path = chooser.getSelectedFile().toPath();
-        if (!path.getFileName().toString().toLowerCase(java.util.Locale.ROOT).endsWith(".csv")) {
-            path = path.resolveSibling(path.getFileName() + ".csv");
-        }
+        var selected = FileDialogs.saveFile(getContentPane(), "bopit-study-csv",
+                "Export study CSV", "bopit-study.csv", BopitFileTypes.CSV);
+        if (selected.isEmpty()) return;
+        java.nio.file.Path path = selected.orElseThrow();
         try {
             StudyCsvExporter.write(result, path);
             message.setText("Exported " + path.getFileName());
@@ -160,15 +154,10 @@ public final class ParameterStudyResultView extends BaseView {
     }
 
     private void saveJson() {
-        JFileChooser chooser = new JFileChooser();
-        chooser.setDialogTitle("Save retained study result");
-        chooser.setFileFilter(new FileNameExtensionFilter("BOPIT JSON files", "json"));
-        chooser.setSelectedFile(new java.io.File("bopit-study-result.json"));
-        if (chooser.showSaveDialog(getContentPane()) != JFileChooser.APPROVE_OPTION) return;
-        java.nio.file.Path path = chooser.getSelectedFile().toPath();
-        if (!path.getFileName().toString().toLowerCase(java.util.Locale.ROOT).endsWith(".json")) {
-            path = path.resolveSibling(path.getFileName() + ".json");
-        }
+        var selected = FileDialogs.saveFile(getContentPane(), "bopit-study-result",
+                "Save retained study result", "bopit-study-result.json", BopitFileTypes.JSON);
+        if (selected.isEmpty()) return;
+        java.nio.file.Path path = selected.orElseThrow();
         try {
             BopitJsonPersistence.writeStudyResult(result, path);
             message.setText("Saved " + path.getFileName());

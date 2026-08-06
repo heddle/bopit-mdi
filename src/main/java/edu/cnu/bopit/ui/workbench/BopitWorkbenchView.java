@@ -12,7 +12,6 @@ import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JList;
-import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
@@ -20,7 +19,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
 import javax.swing.ListSelectionModel;
-import javax.swing.filechooser.FileNameExtensionFilter;
 
 import edu.cnu.bopit.calculation.PointCoulombResult;
 import edu.cnu.bopit.calculation.PublishedProblems;
@@ -30,6 +28,7 @@ import edu.cnu.bopit.persistence.CalculationReport;
 import edu.cnu.bopit.physics.constants.PublishedConstantSets;
 import edu.cnu.bopit.physics.constants.PhysicalConstantSet;
 import edu.cnu.bopit.ui.editor.AtomStateEditorPanel;
+import edu.cnu.bopit.ui.BopitFileTypes;
 import edu.cnu.bopit.ui.editor.GridEditorPanel;
 import edu.cnu.bopit.ui.editor.ElectromagneticEditorPanel;
 import edu.cnu.bopit.ui.editor.SolverEditorPanel;
@@ -51,10 +50,11 @@ import edu.cnu.bopit.model.DiracSpec;
 import edu.cnu.bopit.model.KwonTabakinOpticalPotentialSpec;
 import edu.cnu.bopit.model.OrbitingParticle;
 import edu.cnu.mdi.sim.ProgressInfo;
+import edu.cnu.mdi.dialog.FileDialogs;
 import edu.cnu.mdi.sim.task.BackgroundTasks;
 import edu.cnu.mdi.sim.task.TaskHandle;
 import edu.cnu.mdi.sim.task.TaskListener;
-import edu.cnu.mdi.util.PropertyUtils;
+import edu.cnu.mdi.view.ViewPropertiesBuilder;
 import edu.cnu.mdi.view.BaseView;
 
 /** Stage 3 workbench for configuring and running the validated vertical slice. */
@@ -87,10 +87,8 @@ public final class BopitWorkbenchView extends BaseView
     private PhysicalConstantSet calculationConstants = PublishedConstantSets.PDG_2024;
 
     public BopitWorkbenchView() {
-        super(PropertyUtils.TITLE, "Point-Coulomb Workbench",
-                PropertyUtils.WIDTH, 920,
-                PropertyUtils.HEIGHT, 690,
-                PropertyUtils.USECONTAINER, false);
+        super(new ViewPropertiesBuilder().title("Point-Coulomb Workbench")
+                .width(920).height(690).useContainer(false).buildOptions());
         getContentPane().add(createToolbar(), BorderLayout.NORTH);
         getContentPane().add(createEditorArea(), BorderLayout.CENTER);
         getContentPane().add(createStatusArea(), BorderLayout.SOUTH);
@@ -205,22 +203,24 @@ public final class BopitWorkbenchView extends BaseView
     }
 
     private void openProblem() {
-        JFileChooser chooser = jsonChooser("Open BOPIT problem", "bopit-problem.json");
-        if (chooser.showOpenDialog(getContentPane()) != JFileChooser.APPROVE_OPTION) return;
+        var selected = FileDialogs.openFile(getContentPane(), "bopit-problem",
+                "Open BOPIT problem", BopitFileTypes.JSON);
+        if (selected.isEmpty()) return;
         try {
-            BopitProblem problem = BopitJsonPersistence.readProblem(chooser.getSelectedFile().toPath());
+            BopitProblem problem = BopitJsonPersistence.readProblem(selected.orElseThrow());
             calculationConstants = PublishedConstantSets.PDG_2024;
             loadProblem(problem);
-            status.setText("Opened " + chooser.getSelectedFile().getName());
+            status.setText("Opened " + selected.orElseThrow().getFileName());
         } catch (Exception error) { showFileError("Could not open problem", error); }
     }
 
     private void saveProblem() {
         try {
             BopitProblem problem = configuredProblem(input());
-            JFileChooser chooser = jsonChooser("Save BOPIT problem", "bopit-problem.json");
-            if (chooser.showSaveDialog(getContentPane()) != JFileChooser.APPROVE_OPTION) return;
-            java.nio.file.Path path = extension(chooser.getSelectedFile().toPath(), ".json");
+            var selected = FileDialogs.saveFile(getContentPane(), "bopit-problem",
+                    "Save BOPIT problem", "bopit-problem.json", BopitFileTypes.JSON);
+            if (selected.isEmpty()) return;
+            java.nio.file.Path path = selected.orElseThrow();
             BopitJsonPersistence.writeProblem(problem, path);
             status.setText("Saved " + path.getFileName());
         } catch (Exception error) { showFileError("Could not save problem", error); }
@@ -231,29 +231,14 @@ public final class BopitWorkbenchView extends BaseView
             status.setText("Run a point-Coulomb Schrödinger calculation before saving a report");
             return;
         }
-        JFileChooser chooser = new JFileChooser();
-        chooser.setDialogTitle("Save calculation report");
-        chooser.setFileFilter(new FileNameExtensionFilter("Text files", "txt"));
-        chooser.setSelectedFile(new java.io.File("bopit-calculation.txt"));
-        if (chooser.showSaveDialog(getContentPane()) != JFileChooser.APPROVE_OPTION) return;
-        java.nio.file.Path path = extension(chooser.getSelectedFile().toPath(), ".txt");
+        var selected = FileDialogs.saveFile(getContentPane(), "bopit-report",
+                "Save calculation report", "bopit-calculation.txt", BopitFileTypes.TEXT);
+        if (selected.isEmpty()) return;
+        java.nio.file.Path path = selected.orElseThrow();
         try {
             CalculationReport.write(submittedProblem, completedPointResult, path);
             status.setText("Saved " + path.getFileName());
         } catch (Exception error) { showFileError("Could not save report", error); }
-    }
-
-    private static JFileChooser jsonChooser(String title, String filename) {
-        JFileChooser chooser = new JFileChooser();
-        chooser.setDialogTitle(title);
-        chooser.setFileFilter(new FileNameExtensionFilter("BOPIT JSON files", "json"));
-        chooser.setSelectedFile(new java.io.File(filename));
-        return chooser;
-    }
-
-    private static java.nio.file.Path extension(java.nio.file.Path path, String extension) {
-        return path.getFileName().toString().toLowerCase(java.util.Locale.ROOT).endsWith(extension)
-                ? path : path.resolveSibling(path.getFileName() + extension);
     }
 
     private void showFileError(String title, Exception error) {

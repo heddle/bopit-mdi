@@ -10,16 +10,15 @@ import javax.swing.JTextArea;
 
 import edu.cnu.bopit.calculation.KleinGordonResult;
 import edu.cnu.bopit.model.BopitProblem;
-import edu.cnu.mdi.util.PropertyUtils;
+import edu.cnu.mdi.view.ViewPropertiesBuilder;
 import edu.cnu.mdi.view.BaseView;
 
 /** Retained Klein-Gordon energy and nested convergence summary. */
 public final class KleinGordonSummaryView extends BaseView {
     public KleinGordonSummaryView(BopitProblem problem, KleinGordonResult result,
             double elapsedSeconds) {
-        super(PropertyUtils.TITLE, "Klein-Gordon Result",
-                PropertyUtils.WIDTH, 700, PropertyUtils.HEIGHT, 540,
-                PropertyUtils.USECONTAINER, false);
+        super(new ViewPropertiesBuilder().title("Klein-Gordon Result")
+                .width(700).height(540).useContainer(false).buildOptions());
         StringBuilder text = new StringBuilder();
         text.append("KLEIN-GORDON RESULT\n\n");
         text.append(String.format(Locale.US, "Binding energy       %.12f MeV%n", result.bindingEnergyMeV()));

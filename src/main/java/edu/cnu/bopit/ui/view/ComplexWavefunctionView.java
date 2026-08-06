@@ -10,11 +10,11 @@ import edu.cnu.bopit.physics.wavefunction.ComplexWavefunctions;
 import edu.cnu.bopit.ui.plot.PlotSupport;
 import edu.cnu.mdi.graphics.style.SymbolType;
 import edu.cnu.mdi.splot.fit.CurveDrawingMethod;
-import edu.cnu.mdi.splot.plot.MultiplotPanel;
+import edu.cnu.mdi.splot.plot.PlotDeck;
 import edu.cnu.mdi.splot.plot.PlotCanvas;
 import edu.cnu.mdi.splot.plot.PlotPanel;
 import edu.cnu.mdi.splot.plot.PlotParameters.AxisScale;
-import edu.cnu.mdi.util.PropertyUtils;
+import edu.cnu.mdi.view.ViewPropertiesBuilder;
 import edu.cnu.mdi.view.BaseView;
 
 /** Real, imaginary, and magnitude plots for a complex Gamow-like state. */
@@ -28,10 +28,9 @@ public final class ComplexWavefunctionView extends BaseView {
     }
 
     private ComplexWavefunctionView(ComplexWavefunctions wavefunctions) {
-        super(PropertyUtils.TITLE, "Complex Wavefunction Diagnostics",
-                PropertyUtils.WIDTH, 850, PropertyUtils.HEIGHT, 650,
-                PropertyUtils.USECONTAINER, false);
-        MultiplotPanel plots = new MultiplotPanel(true);
+        super(new ViewPropertiesBuilder().title("Complex Wavefunction Diagnostics")
+                .width(850).height(650).useContainer(false).buildOptions());
+        PlotDeck plots = new PlotDeck(true);
         var momentum = wavefunctions.momentum();
         plots.addPlot("Momentum space", plot(momentum.momentaFmInverse(),
                 momentum.radialValuesFmThreeHalves(), "Complex momentum wavefunction",

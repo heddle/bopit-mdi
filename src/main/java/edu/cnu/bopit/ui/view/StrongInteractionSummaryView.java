@@ -10,16 +10,15 @@ import javax.swing.JTextArea;
 
 import edu.cnu.bopit.calculation.StrongInteractionResult;
 import edu.cnu.bopit.model.BopitProblem;
-import edu.cnu.mdi.util.PropertyUtils;
+import edu.cnu.mdi.view.ViewPropertiesBuilder;
 import edu.cnu.mdi.view.BaseView;
 
 /** Retained summary of a complex strong-interaction calculation. */
 public final class StrongInteractionSummaryView extends BaseView {
     public StrongInteractionSummaryView(BopitProblem problem, StrongInteractionResult result,
             double elapsedSeconds) {
-        super(PropertyUtils.TITLE, "Complex Strong-Interaction Result",
-                PropertyUtils.WIDTH, 680, PropertyUtils.HEIGHT, 500,
-                PropertyUtils.USECONTAINER, false);
+        super(new ViewPropertiesBuilder().title("Complex Strong-Interaction Result")
+                .width(680).height(500).useContainer(false).buildOptions());
         var energy = result.complexBindingEnergyMeV();
         var last = result.solverResult().history().get(result.solverResult().history().size() - 1);
         String text = String.format(Locale.US,

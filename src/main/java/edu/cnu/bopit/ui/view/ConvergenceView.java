@@ -10,20 +10,19 @@ import edu.cnu.bopit.ui.plot.PlotSupport;
 import edu.cnu.mdi.graphics.style.SymbolType;
 import edu.cnu.mdi.splot.fit.CurveDrawingMethod;
 import edu.cnu.mdi.splot.plot.HorizontalLine;
-import edu.cnu.mdi.splot.plot.MultiplotPanel;
+import edu.cnu.mdi.splot.plot.PlotDeck;
 import edu.cnu.mdi.splot.plot.PlotCanvas;
 import edu.cnu.mdi.splot.plot.PlotPanel;
 import edu.cnu.mdi.splot.plot.PlotParameters.AxisScale;
-import edu.cnu.mdi.util.PropertyUtils;
+import edu.cnu.mdi.view.ViewPropertiesBuilder;
 import edu.cnu.mdi.view.BaseView;
 
 /** Gallery of inverse-iteration eigenvalue, energy-change, and residual plots. */
 public final class ConvergenceView extends BaseView {
     public ConvergenceView(PointCoulombResult result) {
-        super(PropertyUtils.TITLE, "Inverse-Iteration Convergence",
-                PropertyUtils.WIDTH, 780, PropertyUtils.HEIGHT, 590,
-                PropertyUtils.USECONTAINER, false);
-        MultiplotPanel gallery = new MultiplotPanel(true);
+        super(new ViewPropertiesBuilder().title("Inverse-Iteration Convergence")
+                .width(780).height(590).useContainer(false).buildOptions());
+        PlotDeck gallery = new PlotDeck(true);
         gallery.addPlot("Eigenvalue", eigenvaluePlot(result));
         gallery.addPlot("Energy change", positivePlot(result.solverResult().history(), true));
         gallery.addPlot("Residual", positivePlot(result.solverResult().history(), false));

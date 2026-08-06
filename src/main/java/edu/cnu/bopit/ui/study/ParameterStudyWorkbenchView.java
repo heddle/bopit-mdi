@@ -10,15 +10,14 @@ import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
-import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.JSpinner;
 import javax.swing.SpinnerNumberModel;
-import javax.swing.filechooser.FileNameExtensionFilter;
 
 import edu.cnu.bopit.model.BopitProblem;
+import edu.cnu.bopit.ui.BopitFileTypes;
 import edu.cnu.bopit.physics.constants.PhysicalConstantSet;
 import edu.cnu.bopit.persistence.BopitJsonPersistence;
 import edu.cnu.bopit.study.LinearParameterAxis;
@@ -30,10 +29,11 @@ import edu.cnu.bopit.study.ParameterStudyResult;
 import edu.cnu.bopit.study.ParameterTarget;
 import edu.cnu.bopit.study.StudyObservable;
 import edu.cnu.mdi.sim.ProgressInfo;
+import edu.cnu.mdi.dialog.FileDialogs;
 import edu.cnu.mdi.sim.task.BackgroundTasks;
 import edu.cnu.mdi.sim.task.TaskHandle;
 import edu.cnu.mdi.sim.task.TaskListener;
-import edu.cnu.mdi.util.PropertyUtils;
+import edu.cnu.mdi.view.ViewPropertiesBuilder;
 import edu.cnu.mdi.view.BaseView;
 
 /** Configures and runs named or custom one-/two-axis studies. */
@@ -62,9 +62,8 @@ public final class ParameterStudyWorkbenchView extends BaseView
     private ParameterStudy loadedStudy;
 
     public ParameterStudyWorkbenchView(BopitProblem base, PhysicalConstantSet constants) {
-        super(PropertyUtils.TITLE, "Parameter Study",
-                PropertyUtils.WIDTH, 820, PropertyUtils.HEIGHT, 520,
-                PropertyUtils.USECONTAINER, false);
+        super(new ViewPropertiesBuilder().title("Parameter Study")
+                .width(820).height(520).useContainer(false).buildOptions());
         this.base = base;
         this.constants = constants;
         JPanel north = new JPanel(new FlowLayout(FlowLayout.LEFT));
@@ -141,35 +140,24 @@ public final class ParameterStudyWorkbenchView extends BaseView
     private void saveStudy() {
         try {
             ParameterStudy study = createStudy();
-            JFileChooser chooser = chooser("Save BOPIT study", "bopit-study.json");
-            if (chooser.showSaveDialog(getContentPane()) != JFileChooser.APPROVE_OPTION) return;
-            java.nio.file.Path path = jsonExtension(chooser.getSelectedFile().toPath());
+            var selected = FileDialogs.saveFile(getContentPane(), "bopit-study",
+                    "Save BOPIT study", "bopit-study.json", BopitFileTypes.JSON);
+            if (selected.isEmpty()) return;
+            java.nio.file.Path path = selected.orElseThrow();
             BopitJsonPersistence.writeStudy(study, path);
             status.setText("Saved " + path.getFileName());
         } catch (Exception error) { showError("Could not save study", error); }
     }
 
     private void openStudy() {
-        JFileChooser chooser = chooser("Open BOPIT study", "bopit-study.json");
-        if (chooser.showOpenDialog(getContentPane()) != JFileChooser.APPROVE_OPTION) return;
+        var selected = FileDialogs.openFile(getContentPane(), "bopit-study",
+                "Open BOPIT study", BopitFileTypes.JSON);
+        if (selected.isEmpty()) return;
         try {
             new ParameterStudyWorkbenchView(BopitJsonPersistence.readStudy(
-                    chooser.getSelectedFile().toPath()), constants);
-            status.setText("Opened " + chooser.getSelectedFile().getName());
+                    selected.orElseThrow()), constants);
+            status.setText("Opened " + selected.orElseThrow().getFileName());
         } catch (Exception error) { showError("Could not open study", error); }
-    }
-
-    private static JFileChooser chooser(String title, String filename) {
-        JFileChooser chooser = new JFileChooser();
-        chooser.setDialogTitle(title);
-        chooser.setFileFilter(new FileNameExtensionFilter("BOPIT JSON files", "json"));
-        chooser.setSelectedFile(new java.io.File(filename));
-        return chooser;
-    }
-
-    private static java.nio.file.Path jsonExtension(java.nio.file.Path path) {
-        return path.getFileName().toString().toLowerCase(java.util.Locale.ROOT).endsWith(".json")
-                ? path : path.resolveSibling(path.getFileName() + ".json");
     }
 
     private void showError(String title, Exception error) {

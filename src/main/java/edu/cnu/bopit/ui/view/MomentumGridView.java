@@ -19,20 +19,19 @@ import edu.cnu.mdi.graphics.style.SymbolType;
 import edu.cnu.mdi.splot.fit.CurveDrawingMethod;
 import edu.cnu.mdi.splot.pdata.PlotData;
 import edu.cnu.mdi.splot.plot.PlotCanvas;
-import edu.cnu.mdi.splot.plot.MultiplotPanel;
+import edu.cnu.mdi.splot.plot.PlotDeck;
 import edu.cnu.mdi.splot.plot.PlotPanel;
 import edu.cnu.mdi.splot.plot.PlotParameters.AxisScale;
 import edu.cnu.mdi.splot.plot.VerticalLine;
-import edu.cnu.mdi.util.PropertyUtils;
+import edu.cnu.mdi.view.ViewPropertiesBuilder;
 import edu.cnu.mdi.view.BaseView;
 
 /** Log-momentum view of the analytic Coulomb shape and quadrature placement. */
 public final class MomentumGridView extends BaseView {
     public MomentumGridView(BopitProblem problem, PointCoulombResult result,
             PhysicalConstantSet constants) {
-        super(PropertyUtils.TITLE, "Momentum Grid Diagnostics",
-                PropertyUtils.WIDTH, 820, PropertyUtils.HEIGHT, 620,
-                PropertyUtils.USECONTAINER, false);
+        super(new ViewPropertiesBuilder().title("Momentum Grid Diagnostics")
+                .width(820).height(620).useContainer(false).buildOptions());
         double minimum = result.grid().point(0);
         double maximum = result.grid().point(result.grid().size() - 1);
         CoulombMomentumProfile profile = CoulombMomentumProfileFactory.create(
@@ -50,7 +49,7 @@ public final class MomentumGridView extends BaseView {
         canvas.getParameters().setXScale(AxisScale.LOG10).includeYZero(true)
                 .setLegendDrawing(true).setMinExponentX(4).setNumDecimalX(3);
         addBoundaries(canvas, result);
-        MultiplotPanel plots = new MultiplotPanel(true);
+        PlotDeck plots = new PlotDeck(true);
         plots.addPlot("Momentum grid", new PlotPanel(canvas));
         getContentPane().add(plots, BorderLayout.CENTER);
     }

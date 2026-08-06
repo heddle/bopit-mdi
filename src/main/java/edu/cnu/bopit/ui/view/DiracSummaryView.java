@@ -10,14 +10,14 @@ import javax.swing.JTextArea;
 
 import edu.cnu.bopit.calculation.DiracResult;
 import edu.cnu.bopit.model.BopitProblem;
-import edu.cnu.mdi.util.PropertyUtils;
+import edu.cnu.mdi.view.ViewPropertiesBuilder;
 import edu.cnu.mdi.view.BaseView;
 
 /** Coupled-component Dirac energy and normalization summary. */
 public final class DiracSummaryView extends BaseView {
     public DiracSummaryView(BopitProblem problem, DiracResult result, double elapsedSeconds) {
-        super(PropertyUtils.TITLE, "Dirac Result", PropertyUtils.WIDTH, 650,
-                PropertyUtils.HEIGHT, 460, PropertyUtils.USECONTAINER, false);
+        super(new ViewPropertiesBuilder().title("Dirac Result")
+                .width(650).height(460).useContainer(false).buildOptions());
         String text = String.format(Locale.US,
                 "DIRAC RESULT%n%n"
                 + "Specification       %s%n"

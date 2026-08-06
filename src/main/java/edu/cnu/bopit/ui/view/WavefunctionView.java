@@ -13,20 +13,19 @@ import edu.cnu.bopit.physics.wavefunction.MomentumWavefunction;
 import edu.cnu.bopit.ui.plot.PlotSupport;
 import edu.cnu.mdi.graphics.style.SymbolType;
 import edu.cnu.mdi.splot.fit.CurveDrawingMethod;
-import edu.cnu.mdi.splot.plot.MultiplotPanel;
+import edu.cnu.mdi.splot.plot.PlotDeck;
 import edu.cnu.mdi.splot.plot.PlotCanvas;
 import edu.cnu.mdi.splot.plot.PlotPanel;
 import edu.cnu.mdi.splot.plot.PlotParameters.AxisScale;
-import edu.cnu.mdi.util.PropertyUtils;
+import edu.cnu.mdi.view.ViewPropertiesBuilder;
 import edu.cnu.mdi.view.BaseView;
 
 /** Momentum- and coordinate-space views of a completed real bound state. */
 public final class WavefunctionView extends BaseView {
     public WavefunctionView(PointCoulombResult result) {
-        super(PropertyUtils.TITLE, "Wavefunction Diagnostics",
-                PropertyUtils.WIDTH, 850, PropertyUtils.HEIGHT, 650,
-                PropertyUtils.USECONTAINER, false);
-        MultiplotPanel plots = new MultiplotPanel(true);
+        super(new ViewPropertiesBuilder().title("Wavefunction Diagnostics")
+                .width(850).height(650).useContainer(false).buildOptions());
+        PlotDeck plots = new PlotDeck(true);
         plots.addPlot("Momentum space", momentumPlot(result));
         plots.addPlot("Coordinate space", coordinatePlot(result));
         getContentPane().add(diagnostics(result), BorderLayout.NORTH);

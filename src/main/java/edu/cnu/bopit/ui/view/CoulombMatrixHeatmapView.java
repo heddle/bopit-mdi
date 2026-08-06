@@ -12,17 +12,16 @@ import edu.cnu.mdi.splot.pdata.Histo2DData;
 import edu.cnu.mdi.splot.pdata.PlotData;
 import edu.cnu.mdi.splot.pdata.PlotDataException;
 import edu.cnu.mdi.splot.plot.PlotCanvas;
-import edu.cnu.mdi.splot.plot.MultiplotPanel;
+import edu.cnu.mdi.splot.plot.PlotDeck;
 import edu.cnu.mdi.splot.plot.PlotPanel;
-import edu.cnu.mdi.util.PropertyUtils;
+import edu.cnu.mdi.view.ViewPropertiesBuilder;
 import edu.cnu.mdi.view.BaseView;
 
 /** Linear/logarithmic magnitude heatmap of the symmetric-basis Coulomb operator. */
 public final class CoulombMatrixHeatmapView extends BaseView {
     public CoulombMatrixHeatmapView(PointCoulombResult result) {
-        super(PropertyUtils.TITLE, "Coulomb Matrix Diagnostics",
-                PropertyUtils.WIDTH, 700, PropertyUtils.HEIGHT, 650,
-                PropertyUtils.USECONTAINER, false);
+        super(new ViewPropertiesBuilder().title("Coulomb Matrix Diagnostics")
+                .width(700).height(650).useContainer(false).buildOptions());
         RealMatrix matrix = result.coulombOperatorMeV();
         int size = matrix.getRowDimension();
         Histo2DData histogram = new Histo2DData("|H_ij|", 0.0, size, size, 0.0, size, size);
@@ -48,7 +47,7 @@ public final class CoulombMatrixHeatmapView extends BaseView {
         JPanel controls = new JPanel();
         controls.add(logMagnitude);
         getContentPane().add(controls, BorderLayout.NORTH);
-        MultiplotPanel plots = new MultiplotPanel(true);
+        PlotDeck plots = new PlotDeck(true);
         plots.addPlot("Coulomb matrix", new PlotPanel(canvas));
         getContentPane().add(plots, BorderLayout.CENTER);
     }
