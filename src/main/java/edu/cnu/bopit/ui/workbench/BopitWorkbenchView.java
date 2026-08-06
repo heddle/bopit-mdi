@@ -28,6 +28,7 @@ import edu.cnu.bopit.ui.editor.GridEditorPanel;
 import edu.cnu.bopit.ui.editor.ElectromagneticEditorPanel;
 import edu.cnu.bopit.ui.editor.SolverEditorPanel;
 import edu.cnu.bopit.ui.editor.StrongInteractionEditorPanel;
+import edu.cnu.bopit.ui.editor.WaveEquationEditorPanel;
 import edu.cnu.bopit.ui.view.ConvergenceView;
 import edu.cnu.bopit.ui.view.CoulombMatrixHeatmapView;
 import edu.cnu.bopit.ui.view.LandeDiagnosticView;
@@ -36,6 +37,9 @@ import edu.cnu.bopit.ui.view.SummaryResultView;
 import edu.cnu.bopit.ui.view.WavefunctionView;
 import edu.cnu.bopit.ui.view.ComplexWavefunctionView;
 import edu.cnu.bopit.ui.view.StrongInteractionSummaryView;
+import edu.cnu.bopit.ui.view.KleinGordonSummaryView;
+import edu.cnu.bopit.model.KleinGordonSpec;
+import edu.cnu.bopit.model.NoStrongInteractionSpec;
 import edu.cnu.mdi.sim.ProgressInfo;
 import edu.cnu.mdi.sim.SimulationContext;
 import edu.cnu.mdi.sim.SimulationEngine;
@@ -50,9 +54,12 @@ public final class BopitWorkbenchView extends BaseView implements SimulationList
     private static final Color ERROR_COLOR = new Color(150, 20, 20);
     private static final Color OK_COLOR = new Color(20, 105, 45);
     private static final String[] SECTIONS = {
-            "Atom and state", "Electromagnetism", "Strong interaction", "Momentum grid", "Solver" };
+            "Atom and state", "Wave equation", "Electromagnetism", "Strong interaction",
+            "Momentum grid", "Solver" };
 
     private final AtomStateEditorPanel atomEditor = new AtomStateEditorPanel(this::refreshValidation);
+    private final WaveEquationEditorPanel equationEditor =
+            new WaveEquationEditorPanel(this::refreshValidation);
     private final ElectromagneticEditorPanel electromagneticEditor =
             new ElectromagneticEditorPanel(this::refreshValidation);
     private final StrongInteractionEditorPanel strongEditor =
@@ -103,10 +110,11 @@ public final class BopitWorkbenchView extends BaseView implements SimulationList
 
         JPanel cards = new JPanel(new CardLayout());
         cards.add(atomEditor, SECTIONS[0]);
-        cards.add(electromagneticEditor, SECTIONS[1]);
-        cards.add(strongEditor, SECTIONS[2]);
-        cards.add(gridEditor, SECTIONS[3]);
-        cards.add(solverEditor, SECTIONS[4]);
+        cards.add(equationEditor, SECTIONS[1]);
+        cards.add(electromagneticEditor, SECTIONS[2]);
+        cards.add(strongEditor, SECTIONS[3]);
+        cards.add(gridEditor, SECTIONS[4]);
+        cards.add(solverEditor, SECTIONS[5]);
         sectionList.addListSelectionListener(event -> {
             if (!event.getValueIsAdjusting() && sectionList.getSelectedValue() != null) {
                 ((CardLayout) cards.getLayout()).show(cards, sectionList.getSelectedValue());
@@ -141,6 +149,7 @@ public final class BopitWorkbenchView extends BaseView implements SimulationList
         BopitProblem preset = PublishedProblems.kaonicSulfur32Legacy3d(
                 PublishedConstantSets.BOPIT_1990, 40, 10);
         atomEditor.load(preset);
+        equationEditor.load(preset.waveEquation());
         gridEditor.load(preset);
         solverEditor.load(preset);
         electromagneticEditor.loadPointCharge();
@@ -178,6 +187,12 @@ public final class BopitWorkbenchView extends BaseView implements SimulationList
             errors.addAll(strongErrors);
             report = new ValidationReport(errors, report.warnings());
         }
+        if (strongErrors.isEmpty() && equationEditor.value() instanceof KleinGordonSpec
+                && !(strongEditor.values() instanceof NoStrongInteractionSpec)) {
+            java.util.ArrayList<String> errors = new java.util.ArrayList<>(report.errors());
+            errors.add("The current Klein-Gordon increment supports electromagnetic potentials only.");
+            report = new ValidationReport(errors, report.warnings());
+        }
         List<String> messages = report.isValid()
                 ? (report.warnings().isEmpty() ? List.of("Input is valid.") : report.warnings())
                 : report.errors();
@@ -192,7 +207,7 @@ public final class BopitWorkbenchView extends BaseView implements SimulationList
         if (!report.isValid() || isCalculationActive()) return;
         BopitProblem baseProblem = editorInput.toProblem();
         submittedProblem = new BopitProblem(baseProblem.atomicSystem(), baseProblem.quantumState(),
-                baseProblem.waveEquation(), baseProblem.grid(), baseProblem.solver(),
+                equationEditor.value(), baseProblem.grid(), baseProblem.solver(),
                 electromagneticEditor.values(), strongEditor.values());
         currentSimulation = new BopitCalculationSimulation(submittedProblem,
                 PublishedConstantSets.BOPIT_1990);
@@ -257,6 +272,11 @@ public final class BopitWorkbenchView extends BaseView implements SimulationList
             new StrongInteractionSummaryView(submittedProblem, strongResult,
                     context.getElapsedSeconds());
             new ComplexWavefunctionView(strongResult);
+        } else if (currentSimulation.kleinGordonResult().isPresent()) {
+            var kleinGordon = currentSimulation.kleinGordonResult().orElseThrow();
+            status.setText("Klein-Gordon calculation complete");
+            new KleinGordonSummaryView(submittedProblem, kleinGordon,
+                    context.getElapsedSeconds());
         }
         setRunningUi(false);
     }
@@ -274,7 +294,8 @@ public final class BopitWorkbenchView extends BaseView implements SimulationList
     public void onStateChange(SimulationContext context, SimulationState from,
             SimulationState to, String reason) {
         if (to == SimulationState.TERMINATED && currentSimulation.result().isEmpty()
-                && currentSimulation.strongResult().isEmpty()) {
+                && currentSimulation.strongResult().isEmpty()
+                && currentSimulation.kleinGordonResult().isEmpty()) {
             finishProgress();
             status.setText("Calculation cancelled");
             setRunningUi(false);

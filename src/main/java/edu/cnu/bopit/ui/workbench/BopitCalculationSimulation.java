@@ -9,9 +9,12 @@ import edu.cnu.bopit.calculation.PointCoulombCalculator;
 import edu.cnu.bopit.calculation.PointCoulombResult;
 import edu.cnu.bopit.calculation.StrongInteractionCalculator;
 import edu.cnu.bopit.calculation.StrongInteractionResult;
+import edu.cnu.bopit.calculation.KleinGordonCalculator;
+import edu.cnu.bopit.calculation.KleinGordonResult;
 import edu.cnu.bopit.model.BopitProblem;
 import edu.cnu.bopit.model.ComplexInverseIterationSpec;
 import edu.cnu.bopit.model.NoStrongInteractionSpec;
+import edu.cnu.bopit.model.KleinGordonSpec;
 import org.apache.commons.math3.complex.Complex;
 import edu.cnu.bopit.physics.constants.PhysicalConstantSet;
 import edu.cnu.mdi.sim.ProgressInfo;
@@ -26,6 +29,7 @@ public final class BopitCalculationSimulation implements Simulation {
     private volatile SimulationEngine engine;
     private volatile PointCoulombResult result;
     private volatile StrongInteractionResult strongResult;
+    private volatile KleinGordonResult kleinGordonResult;
     private boolean executed;
 
     public BopitCalculationSimulation(BopitProblem problem, PhysicalConstantSet constants) {
@@ -47,6 +51,11 @@ public final class BopitCalculationSimulation implements Simulation {
     /** Completed complex result when a strong interaction was selected. */
     public Optional<StrongInteractionResult> strongResult() {
         return Optional.ofNullable(strongResult);
+    }
+
+    /** Completed Klein-Gordon result when that equation was selected. */
+    public Optional<KleinGordonResult> kleinGordonResult() {
+        return Optional.ofNullable(kleinGordonResult);
     }
 
     @Override
@@ -74,7 +83,9 @@ public final class BopitCalculationSimulation implements Simulation {
             }
         };
         try {
-            if (problem.strongInteraction() instanceof NoStrongInteractionSpec) {
+            if (problem.waveEquation() instanceof KleinGordonSpec) {
+                kleinGordonResult = new KleinGordonCalculator().calculate(problem, constants, monitor);
+            } else if (problem.strongInteraction() instanceof NoStrongInteractionSpec) {
                 result = new PointCoulombCalculator().calculate(problem, constants, monitor);
             } else {
                 var realSpec = problem.solver();

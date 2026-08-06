@@ -274,14 +274,14 @@ and width.
 
 ### Relativistic Schrödinger
 
-- [ ] Implement kinetic operator.
-- [ ] Add analytic or published tests.
+- [✓] Implement kinetic operator.
+- [✓] Add analytic or published tests.
 
 ### Klein–Gordon
 
 - [ ] Implement explicitly named forms.
-- [ ] Implement outer energy iteration.
-- [ ] Retain inner and outer convergence histories.
+- [✓] Implement outer energy iteration.
+- [✓] Retain inner and outer convergence histories.
 - [ ] Add published comparisons.
 
 ### Dirac

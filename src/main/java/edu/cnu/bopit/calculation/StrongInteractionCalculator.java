@@ -29,7 +29,8 @@ public final class StrongInteractionCalculator {
         monitor.progress(0.0, "Constructing momentum grid");
         MomentumGrid grid = createGrid(problem, constants);
         var electromagnetic = new SchrodingerHamiltonianBuilder().build(
-                problem.quantumState().orbitalL(), grid, problem.atomicSystem(), constants,
+                problem.waveEquation(), problem.quantumState().orbitalL(), grid,
+                problem.atomicSystem(), constants,
                 problem.electromagnetic());
         monitor.checkCancelled();
         monitor.progress(0.25, "Assembling complex strong interaction");

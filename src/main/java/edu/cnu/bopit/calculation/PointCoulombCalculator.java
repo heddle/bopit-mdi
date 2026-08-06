@@ -33,7 +33,8 @@ public final class PointCoulombCalculator {
         monitor.checkCancelled();
         monitor.progress(0.15, "Assembling electromagnetic Hamiltonian");
         HamiltonianSystem system = new SchrodingerHamiltonianBuilder().build(
-                problem.quantumState().orbitalL(), grid, problem.atomicSystem(), constants,
+                problem.waveEquation(), problem.quantumState().orbitalL(), grid,
+                problem.atomicSystem(), constants,
                 problem.electromagnetic());
         monitor.checkCancelled();
         monitor.progress(0.5, "Solving selected bound state");

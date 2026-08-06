@@ -11,6 +11,7 @@ import javax.swing.JTextArea;
 import edu.cnu.bopit.calculation.PointCoulombResult;
 import edu.cnu.bopit.grid.AdaptiveGridDiagnostics;
 import edu.cnu.bopit.model.BopitProblem;
+import edu.cnu.bopit.model.SchrodingerSpec;
 import edu.cnu.bopit.solver.IterationRecord;
 import edu.cnu.mdi.util.PropertyUtils;
 import edu.cnu.mdi.view.BaseView;
@@ -45,12 +46,16 @@ public final class SummaryResultView extends BaseView {
         text.append(String.format(Locale.US, "Atom/state        Z=%d, A=%d, K-, %d%s%n",
                 problem.atomicSystem().nuclearCharge(), problem.atomicSystem().massNumber(),
                 problem.quantumState().principalN(), orbitalLetter(problem.quantumState().orbitalL())));
-        text.append("Equation          Nonrelativistic Schrödinger\n");
+        text.append("Equation          ").append(problem.waveEquation().getClass().getSimpleName())
+                .append('\n');
         text.append("Grid              ").append(problem.grid().getClass().getSimpleName())
                 .append(", ").append(result.grid().size()).append(" points\n");
         text.append(String.format(Locale.US, "Reduced mass      %.9f MeV%n", result.reducedMassMeV()));
         text.append(String.format(Locale.US, "Calculated energy %.12f MeV%n", result.calculatedEnergyMeV()));
-        text.append(String.format(Locale.US, "Exact Coulomb     %.12f MeV%n", result.referenceEnergyMeV()));
+        text.append(String.format(Locale.US, "%s %.12f MeV%n",
+                problem.waveEquation() instanceof SchrodingerSpec
+                        ? "Exact Coulomb    " : "Nonrel reference ",
+                result.referenceEnergyMeV()));
         text.append("Charge model      ").append(problem.electromagnetic().nuclearCharge()
                 .getClass().getSimpleName()).append('\n');
         text.append("Uehling VP        ").append(problem.electromagnetic()
