@@ -50,6 +50,13 @@ available to Maven.
 mvn clean test
 ```
 
+## Run the Stage 3 workbench
+
+Run `edu.cnu.bopit.app.BopitApplication` as a Java application from Eclipse.
+The workbench opens with the published kaonic sulfur-32 3d legacy-grid preset
+loaded. Use **Run** to execute it on MDI's managed background engine; each
+successful calculation opens a retained summary view.
+
 ## Design documents
 
 - [`AGENTS.md`](AGENTS.md)
@@ -60,7 +67,7 @@ mvn clean test
 ## Proposed package structure
 
 ```text
-src/main/java/io/github/heddle/bopit/
+src/main/java/edu/cnu/bopit/
 ├── app
 ├── calculation
 ├── grid

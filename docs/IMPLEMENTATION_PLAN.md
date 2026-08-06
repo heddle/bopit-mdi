@@ -151,19 +151,19 @@ Run the validated point-Coulomb calculation from Swing controls.
 
 ### Tasks
 
-- [ ] Create `BopitApplication`.
-- [ ] Inspect and reuse the current MDI application shell.
-- [ ] Create `BopitWorkbenchView`.
-- [ ] Use section navigation plus `CardLayout`.
-- [ ] Create Atom and State editor.
-- [ ] Create Grid editor.
-- [ ] Create Solver editor.
-- [ ] Add validation report panel.
-- [ ] Add Run and Cancel actions.
-- [ ] Run calculations off the EDT.
-- [ ] Connect progress and messages to the workbench.
-- [ ] Add the sulfur-32 3d preset.
-- [ ] Add a summary result view.
+- [✓] Create `BopitApplication`.
+- [✓] Inspect and reuse the current MDI application shell.
+- [✓] Create `BopitWorkbenchView`.
+- [✓] Use section navigation plus `CardLayout`.
+- [✓] Create Atom and State editor.
+- [✓] Create Grid editor.
+- [✓] Create Solver editor.
+- [✓] Add validation report panel.
+- [✓] Add Run and Cancel actions.
+- [✓] Run calculations off the EDT.
+- [✓] Connect progress and messages to the workbench.
+- [✓] Add the sulfur-32 3d preset.
+- [✓] Add a summary result view.
 
 ### Exit criterion
 
