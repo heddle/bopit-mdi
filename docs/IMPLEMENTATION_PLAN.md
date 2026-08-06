@@ -21,12 +21,12 @@ not immediate reproduction of every BOPIT option.
 
 ### Tasks
 
-- [ ] Create `src/main/java` and `src/test/java`.
-- [ ] Add package roots under `io.github.heddle.bopit`.
-- [ ] Confirm `mvn clean test`.
-- [ ] Inspect current MDI application, view, plotting, and simulation APIs.
-- [ ] Record any architecture corrections before coding.
-- [ ] Add version/constants scaffolding.
+- [✓] Create `src/main/java` and `src/test/java`.
+- [✓] Add package roots under `edu.cnu.bopit`.
+- [✓] Confirm `mvn clean test`.
+- [✓] Inspect current MDI application, view, plotting, and simulation APIs.
+- [✓] Record any architecture corrections before coding.
+- [✓] Add version/constants scaffolding.
 
 ### Exit criterion
 
@@ -40,77 +40,77 @@ Headlessly reproduce the published kaonic sulfur-32 3d point-Coulomb energy.
 
 ### Model and units
 
-- [ ] Implement `OrbitingParticle`.
-- [ ] Implement `AtomicSystem`.
-- [ ] Implement `QuantumState`.
-- [ ] Implement minimal `SchrodingerSpec`.
-- [ ] Implement minimal `GridSpec` and `SolverSpec`.
-- [ ] Implement `BopitProblem`.
-- [ ] Establish and document internal units.
-- [ ] Implement physical constants with sources.
-- [ ] Implement reduced mass.
-- [ ] Add validation tests.
+- [✓] Implement `OrbitingParticle`.
+- [✓] Implement `AtomicSystem`.
+- [✓] Implement `QuantumState`.
+- [✓] Implement minimal `SchrodingerSpec`.
+- [✓] Implement minimal `GridSpec` and `SolverSpec`.
+- [✓] Implement `BopitProblem`.
+- [✓] Establish and document internal units.
+- [✓] Implement physical constants with sources.
+- [✓] Implement reduced mass.
+- [✓] Add validation tests.
 
 ### Gaussian quadrature
 
-- [ ] Determine which Commons Math APIs are suitable.
-- [ ] Implement an immutable quadrature wrapper.
-- [ ] Test low-order rules against known polynomial integrals.
-- [ ] Confirm even-point requirements.
+- [✓] Determine which Commons Math APIs are suitable.
+- [✓] Implement an immutable quadrature wrapper.
+- [✓] Test low-order rules against known polynomial integrals.
+- [✓] Confirm even-point requirements.
 
 ### Special functions
 
-- [ ] Implement or wrap Legendre `P_l`.
-- [ ] Implement and test Legendre `Q_l`.
-- [ ] Test behavior near `z = 1` without diagonal evaluation.
+- [✓] Implement or wrap Legendre `P_l`.
+- [✓] Implement and test Legendre `Q_l`.
+- [✓] Test behavior near `z = 1` without diagonal evaluation.
 
 ### Legacy grid
 
-- [ ] Transcribe the historical mapping.
-- [ ] Implement transformed weights.
-- [ ] Create `MomentumGrid`.
-- [ ] Validate ordering, positivity, and finite values.
-- [ ] Reproduce a published point distribution.
+- [✓] Transcribe the historical mapping.
+- [✓] Implement transformed weights.
+- [✓] Create `MomentumGrid`.
+- [✓] Validate ordering, positivity, and finite values.
+- [✓] Reproduce a published point distribution.
 
 ### Coulomb kernel
 
-- [ ] Transcribe the exact coefficient and sign.
-- [ ] Insert units explicitly.
-- [ ] Implement off-diagonal evaluation.
-- [ ] Add symmetry and scaling tests.
+- [✓] Transcribe the exact coefficient and sign.
+- [✓] Insert units explicitly.
+- [✓] Implement off-diagonal evaluation.
+- [✓] Add symmetry and scaling tests.
 
 ### Landé subtraction
 
-- [ ] Transcribe the analytic term.
-- [ ] Implement `LandeCoulombMatrixBuilder`.
-- [ ] Return detailed diagonal diagnostics.
-- [ ] Test finite diagonal construction.
-- [ ] Test grid-refinement stability.
-- [ ] Verify no diagonal call reaches the singular kernel.
+- [✓] Transcribe the analytic term.
+- [✓] Implement `LandeCoulombMatrixBuilder`.
+- [✓] Return detailed diagonal diagnostics.
+- [✓] Test finite diagonal construction.
+- [✓] Test grid-refinement stability.
+- [✓] Verify no diagonal call reaches the singular kernel.
 
 ### Schrödinger Hamiltonian
 
-- [ ] Implement the kinetic term.
-- [ ] Assemble the point-Coulomb Hamiltonian.
-- [ ] Test dimensions and symmetry.
-- [ ] Independently check selected matrix elements.
+- [✓] Implement the kinetic term.
+- [✓] Assemble the point-Coulomb Hamiltonian.
+- [✓] Test dimensions and symmetry.
+- [✓] Independently check selected matrix elements.
 
 ### Inverse iteration
 
-- [ ] Implement factor-once, solve-repeatedly iteration.
-- [ ] Test on matrices with known eigenpairs.
-- [ ] Add normalization safeguards.
-- [ ] Track energy change and residual.
-- [ ] Retain iteration history.
-- [ ] Add cancellation hooks.
+- [✓] Implement factor-once, solve-repeatedly iteration.
+- [✓] Test on matrices with known eigenpairs.
+- [✓] Add normalization safeguards.
+- [✓] Track energy change and residual.
+- [✓] Retain iteration history.
+- [✓] Add cancellation hooks.
 
 ### Published regression
 
-- [ ] Create the kaonic sulfur-32 3d preset.
-- [ ] Reproduce the reference Coulomb energy using source constants.
-- [ ] Compare several grid sizes.
-- [ ] Document tolerances.
-- [ ] Investigate discrepancies rather than loosening tolerances casually.
+- [✓] Create the kaonic sulfur-32 3d preset.
+- [✓] Reproduce the reference Coulomb energy using source constants.
+- [✓] Compare several grid sizes.
+- [✓] Document tolerances.
+- [✓] Investigate discrepancies rather than loosening tolerances casually.
 
 ### Exit criterion
 

@@ -48,7 +48,7 @@ infrastructure.
 
 - Java release: 17.
 - Build system: Maven.
-- Base package: `io.github.heddle.bopit`.
+- Base package: `edu.cnu.bopit`.
 - Use Apache Commons Math `Complex` for scalar complex values.
 - Initially represent complex linear systems as real block matrices unless a
   tested complex solver is deliberately introduced.

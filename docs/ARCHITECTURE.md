@@ -72,7 +72,7 @@ The numerical core must never call Swing or MDI.
 ## 5. Proposed package structure
 
 ```text
-io.github.heddle.bopit
+edu.cnu.bopit
 ├── app
 ├── calculation
 ├── grid
