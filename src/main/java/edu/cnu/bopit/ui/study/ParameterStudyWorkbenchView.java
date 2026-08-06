@@ -10,13 +10,17 @@ import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
+import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.JSpinner;
 import javax.swing.SpinnerNumberModel;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 import edu.cnu.bopit.model.BopitProblem;
 import edu.cnu.bopit.physics.constants.PhysicalConstantSet;
+import edu.cnu.bopit.persistence.BopitJsonPersistence;
 import edu.cnu.bopit.study.LinearParameterAxis;
 import edu.cnu.bopit.study.LogarithmicParameterAxis;
 import edu.cnu.bopit.study.NamedStudyTemplates;
@@ -55,6 +59,7 @@ public final class ParameterStudyWorkbenchView extends BaseView implements Simul
     private final JLabel status = new JLabel("Ready");
     private volatile SimulationEngine engine;
     private ParameterStudySimulation simulation;
+    private ParameterStudy loadedStudy;
 
     public ParameterStudyWorkbenchView(BopitProblem base, PhysicalConstantSet constants) {
         super(PropertyUtils.TITLE, "Parameter Study",
@@ -65,6 +70,11 @@ public final class ParameterStudyWorkbenchView extends BaseView implements Simul
         JPanel north = new JPanel(new FlowLayout(FlowLayout.LEFT));
         north.add(new JLabel("Template")); north.add(template);
         north.add(new JLabel("Plot")); north.add(plottedObservable);
+        JButton open = new JButton("Open…");
+        JButton save = new JButton("Save…");
+        open.addActionListener(event -> openStudy());
+        save.addActionListener(event -> saveStudy());
+        north.add(open); north.add(save);
         getContentPane().add(north, BorderLayout.NORTH);
         JPanel axes = new JPanel(new GridLayout(2, 1, 4, 4));
         axes.setBorder(BorderFactory.createTitledBorder("Custom axes"));
@@ -85,6 +95,18 @@ public final class ParameterStudyWorkbenchView extends BaseView implements Simul
         cancel.setEnabled(false);
     }
 
+    /** Open a view whose Run action reproduces an already loaded definition. */
+    public ParameterStudyWorkbenchView(ParameterStudy study, PhysicalConstantSet constants) {
+        this(study.baseProblem(), constants);
+        loadedStudy = study;
+        template.setEnabled(false);
+        useSecond.setEnabled(false);
+        first.setEnabled(false);
+        second.setEnabled(false);
+        plottedObservable.setSelectedItem(study.observables().get(0));
+        status.setText("Loaded study: " + study.name());
+    }
+
     private void runStudy() {
         ParameterStudy study;
         try { study = createStudy(); }
@@ -98,6 +120,7 @@ public final class ParameterStudyWorkbenchView extends BaseView implements Simul
     }
 
     private ParameterStudy createStudy() {
+        if (loadedStudy != null) return loadedStudy;
         return switch ((Template) template.getSelectedItem()) {
             case GRID_CONVERGENCE -> NamedStudyTemplates.gridConvergence(base);
             case CUTOFF_STABILITY -> NamedStudyTemplates.cutoffStability(base);
@@ -115,6 +138,46 @@ public final class ParameterStudyWorkbenchView extends BaseView implements Simul
                                 StudyObservable.ITERATIONS, StudyObservable.RESIDUAL));
             }
         };
+    }
+
+    private void saveStudy() {
+        try {
+            ParameterStudy study = createStudy();
+            JFileChooser chooser = chooser("Save BOPIT study", "bopit-study.json");
+            if (chooser.showSaveDialog(getContentPane()) != JFileChooser.APPROVE_OPTION) return;
+            java.nio.file.Path path = jsonExtension(chooser.getSelectedFile().toPath());
+            BopitJsonPersistence.writeStudy(study, path);
+            status.setText("Saved " + path.getFileName());
+        } catch (Exception error) { showError("Could not save study", error); }
+    }
+
+    private void openStudy() {
+        JFileChooser chooser = chooser("Open BOPIT study", "bopit-study.json");
+        if (chooser.showOpenDialog(getContentPane()) != JFileChooser.APPROVE_OPTION) return;
+        try {
+            new ParameterStudyWorkbenchView(BopitJsonPersistence.readStudy(
+                    chooser.getSelectedFile().toPath()), constants);
+            status.setText("Opened " + chooser.getSelectedFile().getName());
+        } catch (Exception error) { showError("Could not open study", error); }
+    }
+
+    private static JFileChooser chooser(String title, String filename) {
+        JFileChooser chooser = new JFileChooser();
+        chooser.setDialogTitle(title);
+        chooser.setFileFilter(new FileNameExtensionFilter("BOPIT JSON files", "json"));
+        chooser.setSelectedFile(new java.io.File(filename));
+        return chooser;
+    }
+
+    private static java.nio.file.Path jsonExtension(java.nio.file.Path path) {
+        return path.getFileName().toString().toLowerCase(java.util.Locale.ROOT).endsWith(".json")
+                ? path : path.resolveSibling(path.getFileName() + ".json");
+    }
+
+    private void showError(String title, Exception error) {
+        status.setText(title + ": " + error.getMessage());
+        JOptionPane.showMessageDialog(getContentPane(), error.getMessage(), title,
+                JOptionPane.ERROR_MESSAGE);
     }
 
     @Override public void onProgress(SimulationContext context, ProgressInfo info) {
@@ -170,6 +233,10 @@ public final class ParameterStudyWorkbenchView extends BaseView implements Simul
             return spacing.getSelectedItem() == Spacing.LOGARITHMIC
                     ? new LogarithmicParameterAxis(name, (ParameterTarget) target.getSelectedItem(), min, max, n)
                     : new LinearParameterAxis(name, (ParameterTarget) target.getSelectedItem(), min, max, n);
+        }
+        void setEnabled(boolean enabled) {
+            target.setEnabled(enabled); spacing.setEnabled(enabled); minimum.setEnabled(enabled);
+            maximum.setEnabled(enabled); count.setEnabled(enabled);
         }
     }
 }

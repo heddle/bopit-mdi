@@ -65,6 +65,24 @@ public final class ElectromagneticEditorPanel extends JPanel {
         updateEnabled();
     }
 
+    /** Load a validated immutable electromagnetic specification. */
+    public void load(ElectromagneticSpec spec) {
+        var charge = spec.nuclearCharge();
+        if (charge instanceof PointChargeSpec) kind.setSelectedItem(Kind.POINT);
+        else if (charge instanceof UniformChargeSpec uniform) {
+            kind.setSelectedItem(Kind.UNIFORM); radius.setText(Double.toString(uniform.rmsRadiusFm()));
+        } else if (charge instanceof GaussianChargeSpec gaussian) {
+            kind.setSelectedItem(Kind.GAUSSIAN); radius.setText(Double.toString(gaussian.rmsRadiusFm()));
+        } else if (charge instanceof FermiChargeSpec fermi) {
+            kind.setSelectedItem(Kind.FERMI);
+            radius.setText(Double.toString(fermi.halfDensityRadiusFm()));
+            diffuseness.setText(Double.toString(fermi.diffusenessFm()));
+            fermiW.setText(Double.toString(fermi.w()));
+        }
+        uehling.setSelected(spec.uehlingVacuumPolarization());
+        updateEnabled();
+    }
+
     public ElectromagneticSpec values() {
         Kind selected = (Kind) kind.getSelectedItem();
         var charge = switch (selected) {

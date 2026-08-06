@@ -18,6 +18,7 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.DefaultTableModel;
 
 import edu.cnu.bopit.study.ParameterStudyResult;
+import edu.cnu.bopit.persistence.BopitJsonPersistence;
 import edu.cnu.bopit.study.StudyCsvExporter;
 import edu.cnu.bopit.study.StudyObservable;
 import edu.cnu.bopit.study.StudyPointStatus;
@@ -53,8 +54,11 @@ public final class ParameterStudyResultView extends BaseView {
         getContentPane().add(split, BorderLayout.CENTER);
         JPanel controls = new JPanel(new FlowLayout(FlowLayout.LEFT));
         JButton export = new JButton("Export CSV…");
+        JButton saveJson = new JButton("Save result JSON…");
         export.addActionListener(event -> exportCsv());
+        saveJson.addActionListener(event -> saveJson());
         controls.add(export);
+        controls.add(saveJson);
         controls.add(new JLabel(result.cancelled() ? "Cancelled; partial results retained" : "Complete"));
         controls.add(message);
         getContentPane().add(controls, BorderLayout.SOUTH);
@@ -152,6 +156,24 @@ public final class ParameterStudyResultView extends BaseView {
             message.setText("Exported " + path.getFileName());
         } catch (IOException error) {
             message.setText("Export failed: " + error.getMessage());
+        }
+    }
+
+    private void saveJson() {
+        JFileChooser chooser = new JFileChooser();
+        chooser.setDialogTitle("Save retained study result");
+        chooser.setFileFilter(new FileNameExtensionFilter("BOPIT JSON files", "json"));
+        chooser.setSelectedFile(new java.io.File("bopit-study-result.json"));
+        if (chooser.showSaveDialog(getContentPane()) != JFileChooser.APPROVE_OPTION) return;
+        java.nio.file.Path path = chooser.getSelectedFile().toPath();
+        if (!path.getFileName().toString().toLowerCase(java.util.Locale.ROOT).endsWith(".json")) {
+            path = path.resolveSibling(path.getFileName() + ".json");
+        }
+        try {
+            BopitJsonPersistence.writeStudyResult(result, path);
+            message.setText("Saved " + path.getFileName());
+        } catch (IOException error) {
+            message.setText("Save failed: " + error.getMessage());
         }
     }
 }

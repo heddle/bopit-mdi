@@ -333,14 +333,14 @@ and plot.
 
 ### Tasks
 
-- [ ] Define versioned problem DTO.
-- [ ] Define versioned study DTO.
-- [ ] Add JSON open/save.
-- [ ] Save application and schema versions.
-- [ ] Add optional result persistence.
-- [ ] Add human-readable calculation report.
-- [ ] Add CSV study export.
-- [ ] Add clear migration failure messages.
+- [✓] Define versioned problem DTO.
+- [✓] Define versioned study DTO.
+- [✓] Add JSON open/save.
+- [✓] Save application and schema versions.
+- [✓] Add optional result persistence.
+- [✓] Add human-readable calculation report.
+- [✓] Add CSV study export.
+- [✓] Add clear migration failure messages.
 
 ### Exit criterion
 

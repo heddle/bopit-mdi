@@ -12,16 +12,21 @@ import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
 import javax.swing.ListSelectionModel;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 import edu.cnu.bopit.calculation.PointCoulombResult;
 import edu.cnu.bopit.calculation.PublishedProblems;
 import edu.cnu.bopit.model.BopitProblem;
+import edu.cnu.bopit.persistence.BopitJsonPersistence;
+import edu.cnu.bopit.persistence.CalculationReport;
 import edu.cnu.bopit.physics.constants.PublishedConstantSets;
 import edu.cnu.bopit.ui.editor.AtomStateEditorPanel;
 import edu.cnu.bopit.ui.editor.GridEditorPanel;
@@ -77,6 +82,7 @@ public final class BopitWorkbenchView extends BaseView implements SimulationList
     private volatile SimulationEngine currentEngine;
     private BopitCalculationSimulation currentSimulation;
     private BopitProblem submittedProblem;
+    private PointCoulombResult completedPointResult;
 
     public BopitWorkbenchView() {
         super(PropertyUtils.TITLE, "Point-Coulomb Workbench",
@@ -93,12 +99,21 @@ public final class BopitWorkbenchView extends BaseView implements SimulationList
     private JPanel createToolbar() {
         JPanel toolbar = new JPanel(new FlowLayout(FlowLayout.LEFT));
         JButton presetButton = new JButton("Sulfur-32 3d preset");
+        JButton openButton = new JButton("Open problem…");
+        JButton saveButton = new JButton("Save problem…");
+        JButton reportButton = new JButton("Save report…");
         JButton studyButton = new JButton("Parameter study…");
         presetButton.addActionListener(event -> loadSulfurPreset());
+        openButton.addActionListener(event -> openProblem());
+        saveButton.addActionListener(event -> saveProblem());
+        reportButton.addActionListener(event -> saveReport());
         studyButton.addActionListener(event -> openParameterStudy());
         runButton.addActionListener(event -> runCalculation());
         cancelButton.addActionListener(event -> cancelCalculation());
         toolbar.add(presetButton);
+        toolbar.add(openButton);
+        toolbar.add(saveButton);
+        toolbar.add(reportButton);
         toolbar.add(studyButton);
         toolbar.add(runButton);
         toolbar.add(cancelButton);
@@ -159,8 +174,77 @@ public final class BopitWorkbenchView extends BaseView implements SimulationList
         solverEditor.load(preset);
         electromagneticEditor.loadPointCharge();
         strongEditor.loadNone();
+        completedPointResult = null;
         status.setText("Loaded published kaonic sulfur-32 3d legacy-grid preset");
         refreshValidation();
+    }
+
+    private void loadProblem(BopitProblem problem) {
+        atomEditor.load(problem);
+        equationEditor.load(problem.waveEquation());
+        gridEditor.load(problem);
+        solverEditor.load(problem);
+        electromagneticEditor.load(problem.electromagnetic());
+        strongEditor.load(problem.strongInteraction());
+        completedPointResult = null;
+        refreshValidation();
+    }
+
+    private void openProblem() {
+        JFileChooser chooser = jsonChooser("Open BOPIT problem", "bopit-problem.json");
+        if (chooser.showOpenDialog(getContentPane()) != JFileChooser.APPROVE_OPTION) return;
+        try {
+            BopitProblem problem = BopitJsonPersistence.readProblem(chooser.getSelectedFile().toPath());
+            loadProblem(problem);
+            status.setText("Opened " + chooser.getSelectedFile().getName());
+        } catch (Exception error) { showFileError("Could not open problem", error); }
+    }
+
+    private void saveProblem() {
+        try {
+            BopitProblem problem = configuredProblem(input());
+            JFileChooser chooser = jsonChooser("Save BOPIT problem", "bopit-problem.json");
+            if (chooser.showSaveDialog(getContentPane()) != JFileChooser.APPROVE_OPTION) return;
+            java.nio.file.Path path = extension(chooser.getSelectedFile().toPath(), ".json");
+            BopitJsonPersistence.writeProblem(problem, path);
+            status.setText("Saved " + path.getFileName());
+        } catch (Exception error) { showFileError("Could not save problem", error); }
+    }
+
+    private void saveReport() {
+        if (completedPointResult == null || submittedProblem == null) {
+            status.setText("Run a point-Coulomb Schrödinger calculation before saving a report");
+            return;
+        }
+        JFileChooser chooser = new JFileChooser();
+        chooser.setDialogTitle("Save calculation report");
+        chooser.setFileFilter(new FileNameExtensionFilter("Text files", "txt"));
+        chooser.setSelectedFile(new java.io.File("bopit-calculation.txt"));
+        if (chooser.showSaveDialog(getContentPane()) != JFileChooser.APPROVE_OPTION) return;
+        java.nio.file.Path path = extension(chooser.getSelectedFile().toPath(), ".txt");
+        try {
+            CalculationReport.write(submittedProblem, completedPointResult, path);
+            status.setText("Saved " + path.getFileName());
+        } catch (Exception error) { showFileError("Could not save report", error); }
+    }
+
+    private static JFileChooser jsonChooser(String title, String filename) {
+        JFileChooser chooser = new JFileChooser();
+        chooser.setDialogTitle(title);
+        chooser.setFileFilter(new FileNameExtensionFilter("BOPIT JSON files", "json"));
+        chooser.setSelectedFile(new java.io.File(filename));
+        return chooser;
+    }
+
+    private static java.nio.file.Path extension(java.nio.file.Path path, String extension) {
+        return path.getFileName().toString().toLowerCase(java.util.Locale.ROOT).endsWith(extension)
+                ? path : path.resolveSibling(path.getFileName() + extension);
+    }
+
+    private void showFileError(String title, Exception error) {
+        status.setText(title + ": " + error.getMessage());
+        JOptionPane.showMessageDialog(getContentPane(), error.getMessage(), title,
+                JOptionPane.ERROR_MESSAGE);
     }
 
     private WorkbenchProblemInput input() {
@@ -285,6 +369,7 @@ public final class BopitWorkbenchView extends BaseView implements SimulationList
         finishProgress();
         PointCoulombResult result = currentSimulation.result().orElse(null);
         if (result != null) {
+            completedPointResult = result;
             status.setText("Calculation complete; retained result and diagnostic views opened");
             new SummaryResultView(submittedProblem, result, context.getElapsedSeconds());
             new MomentumGridView(submittedProblem, result, PublishedConstantSets.BOPIT_1990);

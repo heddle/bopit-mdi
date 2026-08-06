@@ -52,6 +52,22 @@ public final class StrongInteractionEditorPanel extends JPanel {
 
     public void loadNone() { kind.setSelectedItem(Kind.NONE); updateEnabled(); }
 
+    /** Load a validated immutable strong-interaction specification. */
+    public void load(StrongInteractionSpec spec) {
+        if (spec instanceof NoStrongInteractionSpec) {
+            loadNone();
+        } else if (spec instanceof KwonTabakinOpticalPotentialSpec optical) {
+            kind.setSelectedItem(Kind.KWON_TABAKIN_LOCAL);
+            scatteringReal.setText(Double.toString(optical.fittedScatteringLengthFm().getReal()));
+            scatteringImaginary.setText(Double.toString(optical.fittedScatteringLengthFm().getImaginary()));
+            FermiChargeSpec fermi = (FermiChargeSpec) optical.nuclearFormFactor();
+            fermiC.setText(Double.toString(fermi.halfDensityRadiusFm()));
+            fermiA.setText(Double.toString(fermi.diffusenessFm()));
+            fermiW.setText(Double.toString(fermi.w()));
+            updateEnabled();
+        }
+    }
+
     public StrongInteractionSpec values() {
         if (kind.getSelectedItem() == Kind.NONE) return new NoStrongInteractionSpec();
         return new KwonTabakinOpticalPotentialSpec(

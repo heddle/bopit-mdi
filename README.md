@@ -66,6 +66,12 @@ wavefunctions, compares both with the exact point-Coulomb state, and reports
 normalization, overlap, and relative L2 diagnostics in a dedicated MDI plot
 gallery.
 
+Stage 10 adds versioned JSON open/save for complete problems and parameter
+studies, optional retained study-result JSON, UTF-8 study CSV, and a
+human-readable point-Coulomb calculation report. Persistence conventions and
+schema compatibility behavior are documented in
+[`docs/STAGE_10_CONVENTIONS.md`](docs/STAGE_10_CONVENTIONS.md).
+
 ## Design documents
 
 - [`AGENTS.md`](AGENTS.md)
