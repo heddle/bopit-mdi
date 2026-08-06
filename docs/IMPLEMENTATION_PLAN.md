@@ -125,18 +125,18 @@ Implement the automatic gridpoint method and compare it with the legacy grid.
 
 ### Tasks
 
-- [ ] Implement Coulomb momentum scale.
-- [ ] Implement Gegenbauer polynomial evaluation.
-- [ ] Implement Gegenbauer zero finding.
-- [ ] Convert zeros to momentum nodes.
-- [ ] Build ordered adaptive regions.
-- [ ] Implement nuclear-boundary collision handling.
-- [ ] Implement point allocation among lobes and nuclear region.
-- [ ] Implement region mapping and transformed weights.
-- [ ] Add `GridDiagnostics`.
-- [ ] Validate points, weights, ordering, and allocation.
-- [ ] Reproduce the published sulfur-32 grid behavior.
-- [ ] Add adaptive-versus-legacy convergence tests.
+- [✓] Implement Coulomb momentum scale.
+- [✓] Implement Gegenbauer polynomial evaluation.
+- [✓] Implement Gegenbauer zero finding.
+- [✓] Convert zeros to momentum nodes.
+- [✓] Build ordered adaptive regions.
+- [✓] Implement nuclear-boundary collision handling.
+- [✓] Implement point allocation among lobes and nuclear region.
+- [✓] Implement region mapping and transformed weights.
+- [✓] Add `GridDiagnostics`.
+- [✓] Validate points, weights, ordering, and allocation.
+- [✓] Reproduce the published sulfur-32 grid behavior.
+- [✓] Add adaptive-versus-legacy convergence tests.
 
 ### Exit criterion
 

@@ -1,23 +1,34 @@
 package edu.cnu.bopit.calculation;
 
+import edu.cnu.bopit.grid.AdaptiveCoulombGridFactory;
 import edu.cnu.bopit.grid.LegacyMappedGridFactory;
 import edu.cnu.bopit.grid.MomentumGrid;
 import edu.cnu.bopit.matrix.HamiltonianSystem;
 import edu.cnu.bopit.matrix.SchrodingerHamiltonianBuilder;
 import edu.cnu.bopit.model.BopitProblem;
+import edu.cnu.bopit.model.AdaptiveGridSpec;
+import edu.cnu.bopit.model.LegacyGridSpec;
 import edu.cnu.bopit.physics.ReducedMass;
 import edu.cnu.bopit.physics.constants.PhysicalConstantSet;
 import edu.cnu.bopit.solver.InverseIterationResult;
 import edu.cnu.bopit.solver.InverseIterationSolver;
 
-/** Orchestrates the complete headless Stage 1 calculation. */
+/** Orchestrates a complete headless point-Coulomb calculation. */
 public final class PointCoulombCalculator {
     public PointCoulombResult calculate(BopitProblem problem,
             PhysicalConstantSet constants, CalculationMonitor monitor) {
         if (problem == null || constants == null) throw new IllegalArgumentException("problem and constants are required");
         monitor = monitor == null ? CalculationMonitor.NONE : monitor;
-        monitor.progress(0.0, "Constructing legacy momentum grid");
-        MomentumGrid grid = new LegacyMappedGridFactory().create(problem.grid());
+        monitor.progress(0.0, "Constructing momentum grid");
+        MomentumGrid grid;
+        if (problem.grid() instanceof LegacyGridSpec legacy) {
+            grid = new LegacyMappedGridFactory().create(legacy);
+        } else if (problem.grid() instanceof AdaptiveGridSpec adaptive) {
+            grid = new AdaptiveCoulombGridFactory().create(adaptive,
+                    problem.atomicSystem(), problem.quantumState(), constants);
+        } else {
+            throw new IllegalArgumentException("unsupported grid specification: " + problem.grid());
+        }
         monitor.checkCancelled();
         monitor.progress(0.15, "Assembling Landé-subtracted Hamiltonian");
         HamiltonianSystem system = new SchrodingerHamiltonianBuilder().build(

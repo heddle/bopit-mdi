@@ -27,7 +27,9 @@ public final class LegacyMappedGridFactory {
         return new MomentumGrid(points, weights, List.of(
                 new GridRegion(GridRegion.Type.ATOMIC, 0, spec.atomicPoints(), 0.0, spec.regionBoundary()),
                 new GridRegion(GridRegion.Type.NUCLEAR, spec.atomicPoints(), spec.totalPoints(),
-                        spec.regionBoundary(), spec.regionBoundary() + spec.maximumMomentumScale())));
+                        spec.regionBoundary(), spec.regionBoundary() + spec.maximumMomentumScale())),
+                new LegacyGridDiagnostics(spec.atomicPoints(), spec.nuclearPoints(),
+                        spec.regionBoundary(), spec.regionBoundary() + spec.maximumMomentumScale()));
     }
 
     private static void mapRegion(GaussLegendreRule rule, int offset, double base,

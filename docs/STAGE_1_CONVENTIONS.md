@@ -74,7 +74,7 @@ Those printed targets are retained as reference observations, not mixed into
 the internally consistent BOPIT 4.0 constant set.
 
 `PublishedProblems` records three distinct observations: the 1978 Table I
-40-point value, the 1985 legacy-grid test output, and the 1988 automatic-grid
+40-point value, the 1985 legacy-grid test output, and the 1987 automatic-grid
 test output. A missing mass or constant is represented as unavailable rather
 than inferred from a different source.
 

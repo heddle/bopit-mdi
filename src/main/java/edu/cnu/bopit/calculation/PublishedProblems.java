@@ -1,6 +1,7 @@
 package edu.cnu.bopit.calculation;
 
 import edu.cnu.bopit.model.AtomicSystem;
+import edu.cnu.bopit.model.AdaptiveGridSpec;
 import edu.cnu.bopit.model.BopitProblem;
 import edu.cnu.bopit.model.InverseIterationSpec;
 import edu.cnu.bopit.model.LegacyGridSpec;
@@ -21,8 +22,8 @@ public final class PublishedProblems {
                     "Comput. Phys. Commun. 38 test output", 485.726,
                     -0.3678653, -0.3678384, 40);
 
-    public static final PublishedRegressionTarget AUTOMATIC_GRID_1988_3D_100 =
-            new PublishedRegressionTarget("automatic-grid-1988-3d-100",
+    public static final PublishedRegressionTarget AUTOMATIC_GRID_1987_3D_100 =
+            new PublishedRegressionTarget("automatic-grid-1987-3d-100",
                     "Comput. Phys. Commun. adaptation test output", 485.687,
                     -0.3678359, -0.3678349, 100);
 
@@ -36,6 +37,15 @@ public final class PublishedProblems {
         return new BopitProblem(atom, new QuantumState(3, 2), new SchrodingerSpec(),
                 new LegacyGridSpec(totalPoints, nuclearPoints,
                         0.095, 0.7, 0.3, 1_000.0),
+                new InverseIterationSpec(-0.37, 1e-12, 1e-10, 5, 50));
+    }
+
+    public static BopitProblem kaonicSulfur32Adaptive3d(PhysicalConstantSet constants,
+            int totalPoints, int nuclearPoints) {
+        AtomicSystem atom = new AtomicSystem(16, 32, OrbitingParticle.KAON_MINUS,
+                constants.kaonMassMeV(), constants.nuclearMassMeV(16, 32));
+        return new BopitProblem(atom, new QuantumState(3, 2), new SchrodingerSpec(),
+                new AdaptiveGridSpec(totalPoints, nuclearPoints, 100_000.0, 0.5),
                 new InverseIterationSpec(-0.37, 1e-12, 1e-10, 5, 50));
     }
 }

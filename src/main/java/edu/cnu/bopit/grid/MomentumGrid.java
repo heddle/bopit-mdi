@@ -3,7 +3,8 @@ package edu.cnu.bopit.grid;
 import java.util.List;
 
 /** Immutable momentum quadrature in fm^-1 with weights in fm^-1. */
-public record MomentumGrid(double[] points, double[] weights, List<GridRegion> regions) {
+public record MomentumGrid(double[] points, double[] weights, List<GridRegion> regions,
+        GridDiagnostics diagnostics) {
     public MomentumGrid {
         if (points == null || weights == null || points.length == 0 || points.length != weights.length) {
             throw new IllegalArgumentException("points and weights must have equal positive length");
@@ -11,6 +12,7 @@ public record MomentumGrid(double[] points, double[] weights, List<GridRegion> r
         points = points.clone();
         weights = weights.clone();
         regions = List.copyOf(regions);
+        if (diagnostics == null) throw new IllegalArgumentException("diagnostics are required");
         validate(points, weights);
     }
 

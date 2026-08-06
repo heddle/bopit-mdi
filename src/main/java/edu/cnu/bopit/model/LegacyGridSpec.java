@@ -3,7 +3,7 @@ package edu.cnu.bopit.model;
 /** Historical two-region BOPIT momentum-grid parameters, all in fm^-1. */
 public record LegacyGridSpec(int totalPoints, int nuclearPoints,
         double atomicScale, double nuclearScale, double regionBoundary,
-        double maximumMomentumScale) {
+        double maximumMomentumScale) implements GridSpec {
     public LegacyGridSpec {
         if (totalPoints < 4) throw new IllegalArgumentException("totalPoints must be >= 4");
         if (nuclearPoints <= 0 || nuclearPoints >= totalPoints) {
